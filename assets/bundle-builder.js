@@ -1703,6 +1703,8 @@
       properties['Cintura ' + n + ' - Pelle'] = strapInfo.name || belt.strap || '';
       properties['Cintura ' + n + ' - Lunghezza'] = belt.length || '';
       properties['Cintura ' + n + ' - Fibbia'] = buckleInfo.name || belt.buckle || '';
+      const _comboImg = resolveBeltImage(belt);
+      if (_comboImg) properties['_cintura_' + n + '_img'] = _comboImg;
     });
 
     const items = [{ id: variantId, quantity: 1, properties }];

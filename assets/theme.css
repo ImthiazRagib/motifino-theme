@@ -1801,7 +1801,7 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 }
 
 .line-item {
-  --line-item-media-width: 4.375rem;
+  --line-item-media-width: 3rem;
   align-items: center;
   column-gap: 1.5rem;
   display: flex;
@@ -1817,8 +1817,10 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 
 .line-item__media {
   width: var(--line-item-media-width);
+  height: 2.5rem;
   flex-shrink: 0;
   border-radius: 8px;
+  object-fit: cover;
 }
 
 @media screen and (max-width: 699px) {
@@ -1854,7 +1856,7 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 
 @media screen and (min-width: 700px) {
   .line-item {
-    --line-item-media-width: 7.5rem;
+    --line-item-media-width: 5rem;
   }
 }
 

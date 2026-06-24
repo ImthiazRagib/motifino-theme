@@ -16,7 +16,11 @@
 <line-item
   class="line-item"
 >
-  {%- if line_item.image != blank -%}
+  {%- assign photo = line_item.properties['_cintura_1_img'] -%}
+  {%- if photo != blank -%}
+    <img src="{{ photo }}" alt="{{ line_item.product.title }}" loading="lazy"
+         class="line-item__media" style="object-fit:cover;">
+  {%- elsif line_item.image != blank -%}
     {{-
       line_item.image
       | image_url: width: line_item.image.width
