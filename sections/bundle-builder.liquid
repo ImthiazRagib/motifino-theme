@@ -28,11 +28,13 @@
     {%- comment -%} ══ SCREEN 3: CART ═════════════════════════════== {%- endcomment -%}
     <section id="bb-screen-cart" class="bb-screen" style="display:none" aria-label="Carrello">
       <div class="bb-header">
+        {% comment %}
         <button class="bb-btn-icon" data-action="cart-back" aria-label="Indietro">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M15 18l-6-6 6-6"/>
           </svg>
         </button>
+        {% endcomment %}
         <div class="bb-header__title">Carrello</div>
         <div style="width:36px;"></div>
       </div>
@@ -65,11 +67,13 @@
     {%- comment -%} ══ SCREEN 4: CONFIRM ORDER ════════════════════== {%- endcomment -%}
     <section id="bb-screen-confirm" class="bb-screen" style="display:none" aria-label="Conferma ordine">
       <div class="bb-header">
+        {% comment %}
         <button class="bb-btn-icon" data-action="cart-back" aria-label="Indietro">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M15 18l-6-6 6-6"/>
           </svg>
         </button>
+        {% endcomment %}
         <div class="bb-header__title">Conferma Ordine</div>
         <div style="width:36px;"></div>
       </div>
@@ -138,27 +142,6 @@
         <button class="bb-btn-primary" data-action="continue">← Continue Shopping</button>
       </div>
     </section>
-
-    {%- comment -%} ══ DRAWER: Riepilogo Scelte ═══════════════════ {%- endcomment -%}
-    <div class="bb-modal bb-modal--recap" id="bb-modal-recap" role="dialog" aria-modal="true" aria-label="Riepilogo Scelte">
-      <button class="bb-recap__close" data-close-modal="bb-modal-recap" aria-label="Chiudi">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-      <div class="bb-modal__content bb-recap__panel">
-        <div class="bb-recap__header">
-          <div class="bb-recap__title">Riepilogo Scelte</div>
-        </div>
-        <div class="bb-recap__body">
-          <div id="bb-combo-recap-list" class="bb-combo-recap"></div>
-          <div id="bb-combo-recap-empty" class="bb-combo-recap__empty" style="display:none">
-            Nessuna cintura configurata.
-          </div>
-        </div>
-      </div>
-    </div>
 
     {%- comment -%} ══ MODAL: Vedi indossata ══════════════════════== {%- endcomment -%}
     <div class="bb-modal" id="bb-modal-indossata" role="dialog" aria-modal="true" aria-label="Vedi indossata">

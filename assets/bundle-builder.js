@@ -24,52 +24,6 @@
 
   const MAX_BUNDLES = 3;
 
-  /* ── Persistence ────────────────────────────────────────── */
-  /* Survives reload + accidental nav. Cleared on successful checkout.
-     Skipped while _editMode is active — mid-edit snapshots can't be
-     safely restored without also persisting the saved-bundle backup. */
-  const STORAGE_KEY = 'motifino:bundle:v1';
-  const STORAGE_TTL_MS = 1000 * 60 * 60 * 24 * 7;
-
-  function saveState() {
-    if (state._editMode) return;
-    try {
-      const { _editMode, ...persisted } = state;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        v: 1, savedAt: Date.now(), data: persisted,
-      }));
-    } catch (_) { /* quota / private mode — ignore */ }
-  }
-
-  function loadState() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw);
-      if (!parsed || parsed.v !== 1 || !parsed.data) return null;
-      if (Date.now() - parsed.savedAt > STORAGE_TTL_MS) return null;
-      return parsed.data;
-    } catch (_) { return null; }
-  }
-
-  function clearState() {
-    try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
-  }
-
-  /* Drop selections that no longer exist in the catalog (renamed / unpublished
-     buckles or straps) so the composer falls back to defaults instead of
-     rendering with broken keys. */
-  function sanitizeRestoredBelts(belts) {
-    if (!Array.isArray(belts)) return [];
-    return belts.map(b => {
-      const clean = Object.assign({}, b);
-      if (clean.buckle && !BUCKLES[clean.buckle]) clean.buckle = null;
-      if (clean.strap && !STRAPS[clean.strap]) clean.strap = null;
-      if (clean.length && LENGTHS.indexOf(clean.length) === -1) clean.length = LENGTHS[0];
-      return clean;
-    });
-  }
-
   /* Belt configuration template */
   function newBeltConfig() {
     return { length: LENGTHS[0], buckle: null, strap: null, done: false };
@@ -88,8 +42,7 @@
     }
     state.currentScreen = id;
     updateNav(id);
-    saveState();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function updateNav(screenId) {
@@ -126,8 +79,7 @@
     document.querySelectorAll('.bb-bundle-card').forEach(c => {
       c.classList.toggle('is-selected', c.dataset.type === type);
     });
-    saveState();
-  }
+      }
 
   function startComposing() {
     if (!state.bundleType) { alert('Seleziona un pacchetto per continuare.'); return; }
@@ -161,26 +113,8 @@
       const hasNextBelt = !isEditingCurrent && state.currentBelt < state.totalBelts;
       ctaLabel.textContent = hasNextBelt
         ? 'Conferma e vai alla ' + (state.currentBelt + 1) + '° Cintura'
-        : 'Conferma e vai al riepilogo';
+        : 'Aggiungi al carrello';
     }
-    updateComboBarCount();
-  }
-
-  /* Count of confirmed belts shown as a badge on the recap button.
-     Mirrors renderComboRecap's "confirmed" definition: pending bundles' belts
-     plus the current bundle's belts marked done. */
-  function updateComboBarCount() {
-    const btn = document.querySelector('.bb-combo-bar__view');
-    const countEl = document.getElementById('bb-combo-bar-count');
-    if (!btn || !countEl) return;
-    const isConfirmed = (b) => b && b.buckle && b.strap;
-    const fromPending = (state.pendingBundles || [])
-      .reduce((acc, bundle) => acc.concat(bundle.belts || []), [])
-      .filter(isConfirmed).length;
-    const fromCurrent = (state.belts || []).filter(b => isConfirmed(b) && b.done).length;
-    const count = fromPending + fromCurrent;
-    countEl.textContent = count > 99 ? '99+' : String(count);
-    btn.classList.toggle('has-count', count > 0);
   }
 
   /* ── Composer rendering ─────────────────────────────────── */
@@ -276,7 +210,7 @@
     /* Click done step → go back to it */
     el.querySelectorAll('.bb-wizard__step.is-done').forEach(step => {
       const n = parseInt(step.dataset.belt, 10);
-      step.addEventListener('click', () => { state.currentBelt = n; renderComposer(); saveState(); });
+      step.addEventListener('click', () => { state.currentBelt = n; renderComposer(); });
     });
 
     /* Infinity + button */
@@ -286,8 +220,7 @@
       state.belts.push(newBeltConfig());
       state.currentBelt = state.totalBelts;
       renderComposer();
-      saveState();
-    });
+          });
   }
 
   /* Progress steps */
@@ -347,8 +280,7 @@
         const belt = parseInt(el.dataset.editBelt, 10);
         state.currentBelt = belt;
         renderComposer();
-        saveState();
-      });
+              });
     });
   }
 
@@ -590,8 +522,7 @@
         state.belts[state.currentBelt - 1].length = btn.dataset.length;
         renderLengthButtons(state.belts[state.currentBelt - 1]);
         updateBeltPreview();
-        saveState();
-      });
+              });
     });
   }
 
@@ -712,8 +643,7 @@
       var nameEl = document.getElementById('bb-buckle-name-inline');
       if (nameEl) nameEl.textContent = BUCKLES[key] ? BUCKLES[key].name : '';
       updateComboBar();
-      saveState();
-    }
+          }
 
     container.innerHTML = keys.map((key) => {
       const b = BUCKLES[key];
@@ -862,8 +792,7 @@
       /* Preload buckle-combo photos for this strap in background */
       preloadComboPhotos(keys[selIdx], b2.length);
       updateComboBar();
-      saveState();
-    }
+          }
 
     /* Set initial state */
     updateExternalLabel(selIdx);
@@ -1085,20 +1014,17 @@
   function addToSet() {
     if (!validateCurrentBelt()) return;
     state.belts[state.currentBelt - 1].done = true;
-    saveState();
-
+    
     showBeltSuccess(function () {
       if (state._editMode && state._editMode.isCurrent) {
         // Editing a belt in the active bundle — restore selected belt and return to summary
         state.currentBelt = state._editMode.savedCurrentBelt;
         state._editMode = null;
-        saveState();
-        showReview();
+                showReview();
       } else if (state.currentBelt < state.totalBelts) {
         state.currentBelt += 1;
         renderComposer();
-        saveState();
-      } else if (state._editMode) {
+              } else if (state._editMode) {
         // Save edited belt back into the pending bundle it came from
         const em = state._editMode;
         state.pendingBundles[em.bundleIdx].belts[em.beltInBundle] = JSON.parse(JSON.stringify(state.belts[0]));
@@ -1108,10 +1034,9 @@
         state.currentBelt = em.savedCurrentBelt;
         state.belts = em.savedBelts;
         state._editMode = null;
-        saveState();
-        showReview();
+                showReview();
       } else {
-        showReview();
+        addBundleToCart();
       }
     });
   }
@@ -1430,8 +1355,7 @@
             // Re-render so remaining cards get fresh bundle/belt indices —
             // otherwise stale dataset indices on cards above the deleted one
             // splice the wrong array slots on subsequent deletes.
-            saveState();
-            showReview();
+                        showReview();
           } else {
             // No belts left — restore the originally chosen bundle (single / double / triple / infinity)
             state.pendingBundles = [];
@@ -1481,8 +1405,7 @@
         state.totalBelts = 1;
         state.currentBelt = 1;
         state.belts = [newBeltConfig()];
-        saveState();
-        renderComposer();
+                renderComposer();
         showScreen('composer');
       });
     }
@@ -1587,8 +1510,7 @@
     });
 
     state.pendingBundles = [];
-    saveState();
-
+    
     // Disable CTA and show loading while the request runs
     const cta = document.querySelector('[data-action="add-to-cart"]');
     const originalHTML = cta ? cta.innerHTML : null;
@@ -1677,16 +1599,14 @@
         const numEl = document.getElementById('qty-' + id);
         if (numEl) numEl.textContent = bundle.qty;
         updateCartTotal();
-        saveState();
-      });
+              });
     });
 
     container.querySelectorAll('[data-remove]').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = parseInt(btn.dataset.remove, 10);
         state.cartBundles = state.cartBundles.filter(b => b.id !== id);
-        saveState();
-        renderCart();
+                renderCart();
       });
     });
 
@@ -1894,8 +1814,7 @@
     }
 
     if (resp.ok) {
-      clearState();
-      window.location.href = '/checkout';
+      window.location.href = '/cart';
     } else {
       const errData = await resp.json().catch(function () { return {}; });
       console.error('[BundleBuilder] Cart API error', resp.status, errData);
@@ -1968,63 +1887,6 @@
   }
 
   /* Render the "Riepilogo Scelte" drawer — confirmed belts plus placeholders for remaining slots. */
-  function renderComboRecap() {
-    const list = document.getElementById('bb-combo-recap-list');
-    const empty = document.getElementById('bb-combo-recap-empty');
-    if (!list) return;
-    const isConfirmed = (b) => b && b.buckle && b.strap;
-    const fromPending = (state.pendingBundles || [])
-      .reduce((acc, bundle) => acc.concat(bundle.belts || []), [])
-      .filter(isConfirmed);
-    const fromCurrent = (state.belts || []).filter(b => isConfirmed(b) && b.done);
-    const confirmed = fromPending.concat(fromCurrent);
-    const totalSlots = Math.max(state.totalBelts || 0, confirmed.length);
-    if (!totalSlots) {
-      list.innerHTML = '';
-      if (empty) empty.style.display = '';
-      return;
-    }
-    if (empty) empty.style.display = 'none';
-    const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const slots = [];
-    for (let i = 0; i < totalSlots; i++) {
-      const belt = confirmed[i];
-      if (belt) {
-        const buckleName = (BUCKLES[belt.buckle] || {}).name || '—';
-        const strapName = (STRAPS[belt.strap] || {}).name || '—';
-        const length = belt.length || '—';
-        const imgSrc = resolveBeltImage(belt);
-        const headHTML = `<div class="bb-combo-recap__head">
-            <div class="bb-combo-recap__title-row">
-              <span class="bb-combo-recap__title">${i + 1}° Cintura</span>
-            </div>
-            <div class="bb-combo-recap__sub-row">
-              <span class="bb-combo-recap__length">${esc(length)}</span>
-              <span class="bb-combo-recap__sub">${esc(buckleName)} + ${esc(strapName)}</span>
-            </div>
-          </div>`;
-        const body = imgSrc
-          ? `${headHTML}<img class="bb-combo-recap__img" src="${esc(imgSrc)}" alt="${esc(buckleName + ' + ' + strapName)}">`
-          : `<div class="bb-combo-recap__img bb-combo-recap__img--empty">${headHTML}</div>`;
-        slots.push(`<div class="bb-combo-recap__item">${body}</div>`);
-      } else {
-        slots.push(`<div class="bb-combo-recap__item bb-combo-recap__item--placeholder">
-          <div class="bb-combo-recap__img bb-combo-recap__img--empty">
-            <div class="bb-combo-recap__head">
-              <div class="bb-combo-recap__title-row">
-                <span class="bb-combo-recap__title">${i + 1}° Cintura</span>
-              </div>
-              <div class="bb-combo-recap__sub-row">
-                <span class="bb-combo-recap__sub">Da configurare</span>
-              </div>
-            </div>
-          </div>
-        </div>`);
-      }
-    }
-    list.innerHTML = slots.join('');
-  }
-
   /* ── Modals ─────────────────────────────────────────────── */
   function openModal(id) {
     const modal = document.getElementById(id);
@@ -2040,9 +1902,6 @@
       const combo = _bbMedia && _bbMedia.combinations && _bbMedia.combinations[comboKey];
       const folder = (combo && combo.name) || 'nera-silver';
       if (window._spin360) window._spin360.init(folder);
-    }
-    if (id === 'bb-modal-recap') {
-      renderComboRecap();
     }
   }
   function closeModal(id) {
@@ -2168,8 +2027,7 @@
           // Cancel current-belt edit — just restore selection and go to summary
           state.currentBelt = state._editMode.savedCurrentBelt;
           state._editMode = null;
-          saveState();
-          showReview();
+                    showReview();
         } else if (state._editMode) {
           // Cancel the individual belt edit — restore saved bundle state and go to review
           const em = state._editMode;
@@ -2178,22 +2036,19 @@
           state.currentBelt = em.savedCurrentBelt;
           state.belts = em.savedBelts;
           state._editMode = null;
-          saveState();
-          showReview();
+                    showReview();
         } else if (state.currentBelt > 1) {
           // Go back to previous belt within the same bundle
           state.currentBelt -= 1;
           renderComposer();
-          saveState();
-        } else if (state.pendingBundles.length > 0) {
+                  } else if (state.pendingBundles.length > 0) {
           // Composing 2nd/3rd bundle — restore previous bundle and return to review
           const prev = state.pendingBundles.pop();
           state.bundleType = prev.type;
           state.totalBelts = (BUNDLES[prev.type] || BUNDLES.single).belts;
           state.currentBelt = state.totalBelts;
           state.belts = JSON.parse(JSON.stringify(prev.belts));
-          saveState();
-          showReview();
+                    showReview();
         } else {
           window.history.back();
         }
@@ -2238,17 +2093,6 @@
     wrap.querySelectorAll('[data-action="vedi-360"]').forEach(btn => {
       btn.addEventListener('click', () => openModal('bb-modal-360'));
     });
-    /* Riepilogo Scelte — drawer con tutte le combinazioni del bundle */
-    wrap.querySelectorAll('[data-action="vedi-riepilogo-scelte"]').forEach(btn => {
-      btn.addEventListener('click', () => openModal('bb-modal-recap'));
-    });
-
-
-    /* Vedi Riepilogo — vai direttamente alla schermata review */
-    wrap.querySelectorAll('[data-action="vedi-riepilogo"]').forEach(btn => {
-      btn.addEventListener('click', () => showReview());
-    });
-
     /* Modal closes */
     wrap.querySelectorAll('[data-close-modal]').forEach(btn => {
       btn.addEventListener('click', () => closeModal(btn.dataset.closeModal));
@@ -2279,42 +2123,7 @@
     const _urlParam = new URLSearchParams(window.location.search).get('type');
     const _resolvedType = _urlParam && _TYPE_MAP[_urlParam.toLowerCase().trim()];
 
-    /* Try to restore a previous in-progress bundle. Match on urlType (the
-       tier the user originally entered with) — bundleType flips to 'single'
-       after "Add another" so it can't be the source of truth. */
-    const _restored = loadState();
-    const _canRestore = _restored && _restored.urlType
-      && (!_resolvedType || _restored.urlType === _resolvedType);
-
-    if (_canRestore) {
-      _restored.belts = sanitizeRestoredBelts(_restored.belts);
-      if (Array.isArray(_restored.pendingBundles)) {
-        _restored.pendingBundles = _restored.pendingBundles.map(pb => ({
-          type: pb && pb.type,
-          belts: sanitizeRestoredBelts(pb && pb.belts),
-        }));
-      }
-      Object.assign(state, _restored);
-      state._editMode = null;   /* never resume mid-edit */
-
-      /* Re-apply selectBundleType's visual side-effect on the selector cards */
-      document.querySelectorAll('.bb-bundle-card').forEach(c => {
-        c.classList.toggle('is-selected', c.dataset.type === state.bundleType);
-      });
-
-      const _screen = state.currentScreen || 'composer';
-      if (_screen === 'review') {
-        showReview();
-      } else if (_screen === 'cart' && state.cartBundles.length > 0) {
-        renderCart();
-        showScreen('cart');
-      } else {
-        /* composer / selector / confirm / confirmed — resume composing */
-        renderComposer();
-        showScreen('composer');
-      }
-    } else if (_resolvedType && BUNDLES[_resolvedType]) {
-      if (_restored) clearState();   /* stale draft for a different tier */
+    if (_resolvedType && BUNDLES[_resolvedType]) {
       state.urlType = _resolvedType;
       selectBundleType(_resolvedType);
       startComposing();

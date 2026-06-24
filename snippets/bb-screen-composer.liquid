@@ -68,13 +68,6 @@
           Vedi indossata
         </button>
 
-        <button class="bb-quick-btn" data-action="vedi-riepilogo" style="display:none">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
-            <rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>
-          </svg>
-          Riepilogo
-        </button>
       </div>
     </div>
   </div>
@@ -130,22 +123,16 @@
     <div class="bb-combo-bar__info">
       <div class="bb-combo-bar__title" id="bb-combo-belt-label">CINTURA 1 DI 1</div>
       <div class="bb-combo-bar__sub" id="bb-combo-text">— + —</div>
-      <button class="bb-combo-bar__view" data-action="vedi-riepilogo-scelte" aria-label="Riepilogo scelte">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="9" cy="20" r="1.2"/>
-          <circle cx="17" cy="20" r="1.2"/>
-          <path d="M3 4h2l2.4 11.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.2L21 8H6"/>
-        </svg>
-        <span class="bb-combo-bar__view-count" id="bb-combo-bar-count" aria-hidden="true">0</span>
-      </button>
     </div>
     <div class="bb-combo-bar__actions">
+      {% comment %}
       <button class="bb-combo-bar__back" data-action="composer-back" aria-label="Indietro">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <line x1="19" y1="12" x2="5" y2="12"/>
           <polyline points="12 19 5 12 12 5"/>
         </svg>
       </button>
+      {% endcomment %}
       <button class="bb-btn-primary is-accent" data-action="add-to-set" id="bb-composer-cta">
         <span class="bb-composer-cta__label">Aggiungi combinazione</span>
         <svg class="bb-composer-cta__arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
