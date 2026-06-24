@@ -1,0 +1,165 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-cart",
+      "settings": {
+        "color_scheme": "",
+        "use_custom_section_spacing": false,
+        "mobile_section_spacing_top": 40,
+        "mobile_section_spacing_right": 20,
+        "mobile_section_spacing_bottom": 10,
+        "mobile_section_spacing_left": 20,
+        "desktop_section_spacing_top": 0,
+        "desktop_section_spacing_right": 0,
+        "desktop_section_spacing_bottom": 0,
+        "desktop_section_spacing_left": 0,
+        "show_cart_note": true,
+        "allow_discount_application": true,
+        "show_order_weight": false,
+        "show_shipping_text": false,
+        "show_accelerated_buttons": false,
+        "show_shipping_estimator": false
+      }
+    },
+    "faq_y9kK7f": {
+      "type": "faq",
+      "blocks": {
+        "question_PXmfqE": {
+          "type": "question",
+          "settings": {
+            "question": "C'è una garanzia?",
+            "answer": "<p>Si, ogni set composto da cinturino, fibbia e passante è coperto da una garanzia di 2 anni. Troverai la garanzia con il suo numero seriale all'interno del cofanetto. Scopri come funziona <a href=\"/policies/refund-policy\" title=\"Refund Policy\">qui</a></p>"
+          }
+        },
+        "question_dTQ3tD": {
+          "type": "question",
+          "settings": {
+            "question": "Le cinture arrivano in scatole separate?",
+            "answer": "<p>Si ogni set che aggiungi al carrello arriva nella sua scatola, Quindi se ordini 3 cinture, riceverai 3 scatole separate, così da poter fare quanti regali che preferisci.</p>"
+          }
+        },
+        "question_bHXkhG": {
+          "type": "question",
+          "settings": {
+            "question": "Le scatole sono ben protette per la spedizione?",
+            "answer": "<p>Assolutamente si! Abbiamo migliorato ulteriormente la consegna usando una seconda scatola di cartone molto spesso per proteggere la scatola regalo all'interno. Ci teniamo che possiate dare i vostri regali senza nessun ammaccatura dovuta al corriere.</p>"
+          }
+        },
+        "question_d4XXaW": {
+          "type": "question",
+          "settings": {
+            "question": "Cos'è la Privilege Card in omaggio?",
+            "answer": "<p>Con la Privilege Card potrai scaricare la nostra applicazione da google play o apple store e creare il tuo personale biglietto da visita digitale e molto altro. Qui sotto trovi un video che spiega come funziona. Ne riceverai una per ogni cintura acquistata così potrai condividerle con dei tuoi conoscenti. É un servizio totalmente gratuito solo per i clienti MOTIFINO!</p>"
+          }
+        }
+      },
+      "block_order": [
+        "question_PXmfqE",
+        "question_dTQ3tD",
+        "question_bHXkhG",
+        "question_d4XXaW"
+      ],
+      "name": "t:sections.faq.presets.faq.name",
+      "settings": {
+        "color_scheme": "",
+        "separate_section_with_border": false,
+        "use_custom_section_spacing": false,
+        "mobile_section_spacing_top": 0,
+        "mobile_section_spacing_right": 0,
+        "mobile_section_spacing_bottom": 0,
+        "mobile_section_spacing_left": 0,
+        "desktop_section_spacing_top": 0,
+        "desktop_section_spacing_right": 0,
+        "desktop_section_spacing_bottom": 0,
+        "desktop_section_spacing_left": 0,
+        "show_categories": false,
+        "subheading": "",
+        "title": "Dubbi o domande?",
+        "content": ""
+      }
+    },
+    "text_with_icons_4Jdw7t": {
+      "type": "text-with-icons",
+      "blocks": {
+        "item_pkEzzL": {
+          "type": "item",
+          "settings": {
+            "icon": "picto-delivery-truck",
+            "icon_width": 40,
+            "mobile_icon_width": 32,
+            "title": "",
+            "content": "<p>Spedizioni gratis in 24/72h</p>"
+          }
+        },
+        "item_X3HRiB": {
+          "type": "item",
+          "settings": {
+            "icon": "picto-credit-card",
+            "icon_width": 40,
+            "mobile_icon_width": 32,
+            "title": "",
+            "content": "<p>PayPal, Klarna, contrassegno</p>"
+          }
+        },
+        "item_aEweVE": {
+          "type": "item",
+          "settings": {
+            "icon": "picto-return",
+            "icon_width": 40,
+            "mobile_icon_width": 32,
+            "title": "",
+            "content": "<p>Resi entro 30 giorni, 2 anni garanzia</p>"
+          }
+        },
+        "item_N83wym": {
+          "type": "item",
+          "settings": {
+            "icon": "picto-customer-support",
+            "icon_width": 40,
+            "mobile_icon_width": 32,
+            "title": "",
+            "content": "<p>Assistenza 24/7 Whatsapp</p>"
+          }
+        }
+      },
+      "block_order": [
+        "item_pkEzzL",
+        "item_X3HRiB",
+        "item_aEweVE",
+        "item_N83wym"
+      ],
+      "custom_css": [],
+      "settings": {
+        "color_scheme": "",
+        "use_custom_section_spacing": true,
+        "mobile_section_spacing_top": 26,
+        "mobile_section_spacing_right": 20,
+        "mobile_section_spacing_bottom": 70,
+        "mobile_section_spacing_left": 20,
+        "desktop_section_spacing_top": 30,
+        "desktop_section_spacing_right": 20,
+        "desktop_section_spacing_bottom": 60,
+        "desktop_section_spacing_left": 20,
+        "separate_section_with_border": false,
+        "stack_on_mobile": true,
+        "icon_color": "#b98141",
+        "text_color": "",
+        "text_alignment": "center"
+      }
+    }
+  },
+  "order": [
+    "main",
+    "faq_y9kK7f",
+    "text_with_icons_4Jdw7t"
+  ]
+}
