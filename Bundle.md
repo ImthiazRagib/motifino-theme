@@ -70,3 +70,28 @@
   Purpose: Review DOM
 
   What do you want to change or build on top of this?
+
+
+
+
+  <!-- ----------------- -->
+
+Here are your theme commands for 099701-dd.myshopify.com:
+
+List all themes:
+
+
+shopify theme list --store 099701-dd.myshopify.com
+Pull theme:
+shopify theme pull --store 099701-dd.myshopify.com --theme #192309952838
+
+Push theme:
+shopify theme push --store 099701-dd.myshopify.com --theme #192309952838
+
+Push unpublished (safe preview):
+shopify theme push --store 099701-dd.myshopify.com --theme #192309952838 --unpublished
+
+Dev (live preview with hot reload):
+shopify theme dev --store 099701-dd.myshopify.com --theme THEME_ID
+
+Run the list command first to get your THEME_ID, then substitute it into the pull/push commands.
