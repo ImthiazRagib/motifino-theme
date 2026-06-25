@@ -1779,6 +1779,7 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 
   .order-summary__body td {
     border-width: 0;
+    border-block-end-width: 1px;
   }
 
   .order-summary__body tr:last-child td {
@@ -1800,6 +1801,13 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   }
 }
 
+.order-summary__body td {
+  border-block-start-width: 0;
+}
+.order-summary__header th {
+  border-block-start-width: 0;
+}
+
 @media screen and (max-width: 699px) {
   .bb-nfc-mobile-qty { display: inline !important; }
 }
@@ -1811,13 +1819,13 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   display: flex;
 }
 
-@media (max-width: 699px) {
+/* @media (max-width: 699px) {
   .line-item {
     border: 1px solid #e0e0e0;
     padding: 10px;
     border-radius: 14px;
   }
-}
+} */
 
 .line-item__media {
   width: var(--line-item-media-width);
@@ -1828,12 +1836,12 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   display: block;
 }
 
-@media screen and (max-width: 699px) {
+/* @media screen and (max-width: 699px) {
   .line-item {
     border-bottom: 1px solid rgb(var(--border-color));
     padding-bottom: 1rem;
   }
-}
+} */
 
 @media screen and (max-width: 699px) {
   line-item-quantity {
@@ -1865,33 +1873,120 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   }
 }
 
-.bb-cart-upsell__btn {
+/* ── Upsell card ─────────────────────────────────── */
+.bb-cart-upsell__card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border: 1.5px solid #d4d4d4;
+  border-radius: 10px;
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+  box-sizing: border-box;
+  transition: border-color .15s;
+}
+.bb-cart-upsell__card:hover { border-color: #999; }
+.bb-cart-upsell__img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.bb-cart-upsell__info { flex: 1; min-width: 0; }
+.bb-cart-upsell__title {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+}
+.bb-cart-upsell__prices {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+.bb-cart-upsell__new-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: #c0392b;
+}
+.bb-cart-upsell__old-price {
+  font-size: 13px;
+  color: #999;
+  text-decoration: line-through;
+}
+.bb-cart-upsell__action {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  background: #111;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ── Line item image wrap + X remove button ─────── */
+.bb-line-item-img-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.bb-remove-x {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  z-index: 2;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid #333;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 13px 20px;
-  margin-bottom: 16px;
-  border: 1.5px dashed #b8860b;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #b8860b;
-  background: #fffbf0;
+  color: #333;
   text-decoration: none;
-  transition: background .15s, border-color .15s;
-  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(0,0,0,.15);
+}
+.bb-remove-x:hover { background: #f5f5f5; }
+
+/* ── Mobile-only price inside line item ─────────── */
+.bb-li-price--mobile { display: none; }
+@media screen and (max-width: 699px) {
+  .bb-li-price--mobile {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    margin-top: 2px;
+  }
 }
 
-.bb-cart-upsell__btn:hover {
-  background: #fff5d6;
-  border-color: #8a6000;
-  color: #8a6000;
+/* ── Strikethrough original price ───────────────── */
+.bb-li-original-price {
+  text-decoration: line-through;
+  color: #999;
+  font-size: 0.85em;
 }
 
-.bb-cart-upsell__price {
-  font-weight: 700;
+.bb-cart-props {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.bb-cart-prop__key {
+  color: rgb(var(--text-color));
+}
+
+/* ── NFC qty shown only on mobile ───────────────── */
+.bb-nfc-inline-qty { display: none; }
+@media screen and (max-width: 699px) {
+  .bb-nfc-inline-qty { display: inline; }
+  .bb-nfc-mobile-qty { display: inline !important; }
 }
 
 .bb-cart-composition__header {

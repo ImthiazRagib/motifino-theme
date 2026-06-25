@@ -33,20 +33,25 @@
     {%- else -%}{%- assign _li_belt_price_display = '29,99' -%}
     {%- endif -%}
   {%- endif -%}
-  {%- if photo != blank -%}
-    <img src="{{ photo }}" alt="{{ line_item.product.title }}" loading="lazy"
-         class="line-item__media" style="object-fit:cover;">
-  {%- elsif line_item.image != blank -%}
-    {{-
-      line_item.image
-      | image_url: width: line_item.image.width
-      | image_tag:
-        loading: 'lazy',
-        sizes: '(max-width: 699px) 70px, 120px',
-        widths: '70,120,140,210,240,360',
-        class: 'line-item__media'
-    -}}
-  {%- endif -%}
+  <div class="bb-line-item-img-wrap">
+    <a href="{{ line_item.url_to_remove }}" class="bb-remove-x" aria-label="{{ 'cart.order.remove_with_title' | t: title: line_item.title | escape }}">
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </a>
+    {%- if photo != blank -%}
+      <img src="{{ photo }}" alt="{{ line_item.product.title }}" loading="lazy"
+           class="line-item__media" style="object-fit:cover;">
+    {%- elsif line_item.image != blank -%}
+      {{-
+        line_item.image
+        | image_url: width: line_item.image.width
+        | image_tag:
+          loading: 'lazy',
+          sizes: '(max-width: 699px) 70px, 120px',
+          widths: '70,120,140,210,240,360',
+          class: 'line-item__media'
+      -}}
+    {%- endif -%}
+  </div>
 
   <div class="line-item-info">
     {%- assign text_class = '' -%}
@@ -115,7 +120,7 @@
             {%- assign _pelle_val = line_item.properties['Cintura 1 - Pelle'] -%}
             {%- assign _lunghezza_val = line_item.properties['Cintura 1 - Lunghezza'] -%}
             {%- assign _fibbia_val = line_item.properties['Cintura 1 - Fibbia'] -%}
-            <ul class="bb-cart-props text-subdued">
+            <ul class="bb-cart-props">
               {%- if _pelle_val != blank -%}
                 <li><span class="bb-cart-prop__key">Pelle:</span> {{ _pelle_val }}{% if _lunghezza_val != blank %} - {{ _lunghezza_val }}{% endif %}</li>
               {%- endif -%}
@@ -124,7 +129,12 @@
               {%- endif -%}
             </ul>
             {%- if _li_is_belt -%}
-              <div class="bb-cart-belt-price">€ {{ _li_belt_price_display }}</div>
+              <div class="bb-li-price--mobile">
+                <span>€ {{ _li_belt_price_display }}</span>
+                {%- if _li_belt_pos > 0 -%}
+                  <span class="bb-li-original-price">{{ line_item.original_price | money }}</span>
+                {%- endif -%}
+              </div>
             {%- endif -%}
           {%- else -%}
             <ul class="text-subdued">
@@ -153,12 +163,6 @@
           {{- secondary_information -}}
         </div>
       {%- endif -%}
-
-      <line-item-quantity class="sm:hidden">
-        <a href="{{ line_item.url_to_remove }}" class="link text-xs" aria-label="{{ 'cart.order.remove_with_title' | t: title: line_item.title | escape }}">
-          {{- 'cart.order.remove' | t -}}
-        </a>
-      </line-item-quantity>
 
       {%- if line_item.line_level_discount_allocations != blank -%}
         <ul class="v-stack justify-items-start gap-1 unstyled-list" role="list">

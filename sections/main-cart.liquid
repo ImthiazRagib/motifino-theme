@@ -62,12 +62,19 @@
         {%- elsif _cart_belt_count == 2 -%}{%- assign _next_belt_price = '34,99' -%}
         {%- else -%}{%- assign _next_belt_price = '29,99' -%}
         {%- endif -%}
-        <a href="/pages/bundle?type=set-cintura-singola" class="bb-cart-upsell__btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          Aggiungi 1 Cintura
-          <span class="bb-cart-upsell__price">&nbsp;(+€ {{ _next_belt_price }})</span>
+        {%- assign _next_belt_num = _cart_belt_count | plus: 1 -%}
+        <a href="/pages/bundle?type=set-cintura-singola" class="bb-cart-upsell__card">
+          <img src="https://cdn.shopify.com/s/files/1/0677/2083/9299/files/single_set_1.jpg?v=1776238594" alt="Cintura" class="bb-cart-upsell__img" loading="lazy">
+          <div class="bb-cart-upsell__info">
+            <strong class="bb-cart-upsell__title">Crea la tua {{ _next_belt_num }}° Cintura</strong>
+            <div class="bb-cart-upsell__prices">
+              <span class="bb-cart-upsell__new-price">€{{ _next_belt_price }}</span>
+              {%- if _cart_belt_count > 0 -%}
+                <span class="bb-cart-upsell__old-price">€49,99</span>
+              {%- endif -%}
+            </div>
+          </div>
+          <span class="bb-cart-upsell__action">+ Aggiungi</span>
         </a>
 
         <form action="{{ routes.cart_url }}" method="POST" class="cart-page">
@@ -171,9 +178,6 @@
                             {%- render 'quantity-selector', line_item: line_item, size: 'sm' -%}
                           {%- endunless -%}
 
-                          <a href="{{ line_item.url_to_remove }}" class="link text-xs" aria-label="{{ 'cart.order.remove_with_title' | t: title: line_item.title | escape }}">
-                            {{- 'cart.order.remove' | t -}}
-                          </a>
                         </line-item-quantity>
                       </div>
                     </td>
@@ -192,32 +196,44 @@
                       {%- endif -%}
                       {%- if _li_is_belt_item -%}
                         {%- assign _display_price = _li_belt_price_cents | times: line_item.quantity -%}
-                      {%- endif -%}
-                      {%- if settings.currency_code_enabled -%}
-                        {{- _display_price | money_with_currency -}}
-                      {%- else -%}
                         {{- _display_price | money -}}
+                        {%- if _li_belt_cart_pos > 0 -%}
+                          <br><span class="bb-li-original-price">{{- line_item.original_line_price | money -}}</span>
+                        {%- endif -%}
+                      {%- else -%}
+                        {%- if settings.currency_code_enabled -%}
+                          {{- _display_price | money_with_currency -}}
+                        {%- else -%}
+                          {{- _display_price | money -}}
+                        {%- endif -%}
                       {%- endif -%}
                     </td>
                   </tr>
                 {%- endfor -%}
                 {%- if _cart_belt_count > 0 -%}
+                  {%- assign _nfc_total_value = _cart_belt_count | times: 1999 -%}
                   <tr class="bb-nfc-gift-row">
                     <td>
                       <line-item class="line-item">
                         <img
                           src="https://cdn.shopify.com/s/files/1/0829/7909/4854/files/Privilege-card-motifino.jpg?v=1777019353"
-                          alt="NFC Card"
+                          alt="Privilege Card Black"
                           width="120"
                           height="120"
                           loading="lazy"
                           class="line-item__media"
                           style="object-fit:cover;"
                         >
-                        <div class="line-item-info">
+                        <div class="line-item-info" style="flex:1;min-width:0;">
                           <div class="v-stack justify-items-start gap-1">
-                            <p style="font-weight:700;">Privilage Card Black <span style="font-weight:400;display:none;margin-left:0.5rem;" class="bb-nfc-mobile-qty">x{{ _cart_belt_count }}</span></p>
-                            <span class="text-subdued text-xs">GRATIS</span>
+                            <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                              <p style="font-weight:700;">Privilege Card Black</p>
+                              <span class="text-subdued bb-nfc-inline-qty" style="margin-left:1rem;">x{{ _cart_belt_count }}</span>
+                            </div>
+                            <div class="h-stack gap-2" style="align-items:center;">
+                              <span style="color:#2a9d2a;font-weight:600;">GRATIS</span>
+                              <span class="bb-li-original-price">{{ _nfc_total_value | money }}</span>
+                            </div>
                           </div>
                         </div>
                       </line-item>
