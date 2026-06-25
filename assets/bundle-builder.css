@@ -46,10 +46,6 @@ announcement-bar-section {
   display: none !important;
 }
 
-/* ── Hide cart icon in Dawn header on the bundler page ── */
-.header__cart-link {
-  display: none !important;
-}
 
 /* ── Reset & base ─────────────────────────────────────────── */
 .bb-wrap *,
