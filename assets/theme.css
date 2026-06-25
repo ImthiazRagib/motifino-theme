@@ -1989,6 +1989,73 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   .bb-nfc-mobile-qty { display: inline !important; }
 }
 
+/* ── Cart recap ─────────────────────────────────── */
+.bb-cart-recap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bb-recap-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+}
+
+.bb-recap-row--discount {
+  color: #c0392b;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgb(var(--border-color));
+}
+
+.bb-recap-row--total {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.bb-recap-row--total span {
+  font-weight: 700;
+}
+
+.bb-recap-coupons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bb-recap-coupons .discount-badge {
+  background: #c0392b;
+  color: #fff;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+.bb-recap-coupons .discount-badge svg { color: #fff; }
+.bb-recap-coupons .discount-badge button { color: #fff; opacity: .8; }
+
+.bb-delivery-text {
+  font-size: 14px;
+  margin: 0;
+}
+
+.bb-checkout-btn {
+  width: 100%;
+  padding: 16px;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+
+.bb-checkout-btn:hover { background: #333; }
+
 .bb-cart-composition__header {
   display: flex;
   align-items: center;

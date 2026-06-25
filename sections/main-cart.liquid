@@ -263,46 +263,11 @@
                 </cart-note>
               {%- endif -%}
 
-              <div class="cart-recap">
-                {%- if section.settings.allow_discount_application -%}
-                  {%- render 'cart-discount' -%}
-                {%- endif -%}
-
-                {%- if cart.cart_level_discount_applications.size > 0 -%}
-                  <div class="h-stack gap-3">
-                    {%- for discount_application in cart.cart_level_discount_applications -%}
-                      <div class="h-stack justify-start gap-2">
-                        <span class="discount-badge text-xs">
-                          {%- render 'icon' with 'discount', width: 12 -%}
-                          {{- discount_application.title -}}
-                          (-{{ discount_application.total_allocated_amount | money }})
-
-                          {%- if section.settings.allow_discount_application and discount_application.type != '' -%}
-                            <cart-discount-remove-button discount-code="{{ discount_application.title | escape }}" class="h-stack align-center">
-                              <button type="button">{%- render 'icon' with 'close', width: 8 -%}</button>
-                            </cart-discount-remove-button>
-                          {%- endif -%}
-                        </span>
-                      </div>
-                    {%- endfor -%}
-                  </div>
-                {%- endif -%}
-
-                {%- comment -%}Give apps a special hook to add features on the recap (such as capturing delivery dates){%- endcomment -%}
-                {%- for block in section.blocks -%}
-                  {%- if block.type == '@app' -%}
-                    {%- render block -%}
-                  {%- endif -%}
-                {%- endfor -%}
-
-                {%- if section.settings.show_order_weight -%}
-                  <div class="h-stack justify-start gap-2">
-                    <span class="text-subdued">{{ 'cart.general.weight' | t }}:</span>
-                    <span class="text-subdued">{{ cart.total_weight | weight_with_unit }}</span>
-                  </div>
-                {%- endif -%}
+              <div class="bb-cart-recap">
+                {%- render 'cart-discount' -%}
 
                 {%- assign _bb_custom_total = 0 -%}
+                {%- assign _bb_full_price = 0 -%}
                 {%- if _cart_belt_count > 0 -%}
                   {%- assign _bb_belt_total_pos = 0 -%}
                   {%- for _ti in cart.items -%}
@@ -314,72 +279,86 @@
                     {%- endfor -%}
                     {%- if _ti_skip -%}{%- continue -%}{%- endif -%}
                     {%- if _ti.properties['Cintura 1 - Pelle'] != blank or _ti.properties['Cintura 1 - Lunghezza'] != blank -%}
+                      {%- assign _bb_full_price = _bb_full_price | plus: 4999 -%}
                       {%- if _bb_belt_total_pos == 0 -%}{%- assign _ti_pc = 4999 -%}
                       {%- elsif _bb_belt_total_pos == 1 -%}{%- assign _ti_pc = 3999 -%}
                       {%- elsif _bb_belt_total_pos == 2 -%}{%- assign _ti_pc = 3499 -%}
                       {%- else -%}{%- assign _ti_pc = 2999 -%}
                       {%- endif -%}
                       {%- assign _bb_belt_total_pos = _bb_belt_total_pos | plus: 1 -%}
-                      {%- assign _ti_lt = _ti_pc | times: _ti.quantity -%}
-                      {%- assign _bb_custom_total = _bb_custom_total | plus: _ti_lt -%}
+                      {%- assign _bb_custom_total = _bb_custom_total | plus: _ti_pc -%}
                     {%- else -%}
+                      {%- assign _bb_full_price = _bb_full_price | plus: _ti.original_line_price -%}
                       {%- assign _bb_custom_total = _bb_custom_total | plus: _ti.final_line_price -%}
                     {%- endif -%}
                   {%- endfor -%}
                 {%- endif -%}
+                {%- assign _bb_savings = _bb_full_price | minus: _bb_custom_total -%}
+                {%- assign _bb_cart_disc = 0 -%}
+                {%- for _da in cart.cart_level_discount_applications -%}
+                  {%- assign _bb_cart_disc = _bb_cart_disc | plus: _da.total_allocated_amount -%}
+                {%- endfor -%}
+                {%- assign _bb_final_total = _bb_custom_total | minus: _bb_cart_disc -%}
 
-                {%- if cart.items_subtotal_price != cart.total_price and _cart_belt_count == 0 -%}
-                  <div class="h-stack justify-start gap-2">
-                    <span class="text-subdued">{{ 'cart.general.subtotal' | t }}:</span>
-                    <span class="text-subdued">
-                      {%- if settings.currency_code_enabled -%}
-                        {{- cart.items_subtotal_price | money_with_currency -}}
-                      {%- else -%}
-                        {{- cart.items_subtotal_price | money -}}
-                      {%- endif -%}
-                    </span>
+                {%- if _bb_savings > 0 -%}
+                  <div class="bb-recap-row">
+                    <span>Importo:</span>
+                    <span>{{ _bb_full_price | money }}</span>
+                  </div>
+                  {%- assign _bb_pct = _bb_savings | times: 100.0 | divided_by: _bb_full_price | round: 1 -%}
+                  <div class="bb-recap-row bb-recap-row--discount">
+                    <span>Offerta Set:</span>
+                    <span>-{{ _bb_savings | money }} (-{{ _bb_pct | replace: '.', ',' }}%)</span>
                   </div>
                 {%- endif -%}
 
-                <div class="h-stack justify-start gap-2">
-                  <span class="text-lg">{{ 'cart.general.total' | t }}:</span>
-                  <span class="text-lg">
+                {%- if cart.cart_level_discount_applications.size > 0 -%}
+                  <div class="bb-recap-coupons">
+                    {%- for discount_application in cart.cart_level_discount_applications -%}
+                      <span class="discount-badge text-xs">
+                        {%- render 'icon' with 'discount', width: 12 -%}
+                        {{- discount_application.title -}}(-{{ discount_application.total_allocated_amount | money }})
+                        {%- if section.settings.allow_discount_application and discount_application.type != '' -%}
+                          <cart-discount-remove-button discount-code="{{ discount_application.title | escape }}" class="h-stack align-center">
+                            <button type="button">{%- render 'icon' with 'close', width: 8 -%}</button>
+                          </cart-discount-remove-button>
+                        {%- endif -%}
+                      </span>
+                    {%- endfor -%}
+                  </div>
+                {%- endif -%}
+
+                {%- for block in section.blocks -%}
+                  {%- if block.type == '@app' -%}{%- render block -%}{%- endif -%}
+                {%- endfor -%}
+
+                <div class="bb-recap-row bb-recap-row--total">
+                  <span>{{ 'cart.general.total' | t }}:</span>
+                  <span>
                     {%- if _cart_belt_count > 0 -%}
-                      {{- _bb_custom_total | money_with_currency -}}
+                      {{- _bb_final_total | money_with_currency -}}
                     {%- else -%}
                       {{- cart.total_price | money_with_currency -}}
                     {%- endif -%}
                   </span>
                 </div>
 
-                {%- if section.settings.show_shipping_text -%}
-                  {%- if cart.taxes_included and shop.shipping_policy.body != blank -%}
-                    <p class="text-subdued text-sm">{{ 'cart.general.taxes_included_and_shipping_policy_html' | t: link: shop.shipping_policy.url }}</p>
-                  {%- elsif cart.taxes_included -%}
-                    <p class="text-subdued text-sm">{{ 'cart.general.taxes_included_but_shipping_at_checkout' | t }}</p>
-                  {%- elsif shop.shipping_policy.body != blank -%}
-                    <p class="text-subdued text-sm">{{ 'cart.general.taxes_and_shipping_policy_at_checkout_html' | t: link: shop.shipping_policy.url }}</p>
-                  {%- else -%}
-                    <p class="text-subdued text-sm">{{ 'cart.general.taxes_and_shipping_at_checkout' | t }}</p>
-                  {%- endif -%}
-                {%- endif -%}
-
                 <div class="delivery-widget__manual"></div>
-
 
                 {%- if section.settings.show_accelerated_buttons and additional_checkout_buttons -%}
                   <div class="additional-checkout-buttons additional-checkout-buttons--vertical">
                     {{- content_for_additional_checkout_buttons -}}
                   </div>
-                {% endif %}
+                {%- endif -%}
 
                 <noscript>
                   {%- assign update_button = 'cart.general.update_cart' | t -%}
                   {%- render 'button', type: 'submit', content: update_button, style: 'outline' -%}
                 </noscript>
 
-                {%- assign checkout_button = 'cart.general.checkout' | t -%}
-                {%- render 'button', type: 'submit', content: checkout_button, name: 'checkout' -%}
+                <button type="submit" name="checkout" class="bb-checkout-btn">
+                  {{ 'cart.general.checkout' | t }}
+                </button>
               </div>
             </div>
           </div>
