@@ -201,6 +201,35 @@
                     </td>
                   </tr>
                 {%- endfor -%}
+                {%- if _cart_belt_count > 0 -%}
+                  <tr class="bb-nfc-gift-row">
+                    <td>
+                      <line-item class="line-item">
+                        <img
+                          src="https://cdn.shopify.com/s/files/1/0829/7909/4854/files/Privilege-card-motifino.jpg?v=1777019353"
+                          alt="NFC Card"
+                          width="120"
+                          height="120"
+                          loading="lazy"
+                          class="line-item__media"
+                          style="object-fit:cover;"
+                        >
+                        <div class="line-item-info">
+                          <div class="v-stack justify-items-start gap-1">
+                            <p style="font-weight:700;">Privilage Card Black <span style="font-weight:400;display:none;margin-left:0.5rem;" class="bb-nfc-mobile-qty">x{{ _cart_belt_count }}</span></p>
+                            <span class="text-subdued text-xs">GRATIS</span>
+                          </div>
+                        </div>
+                      </line-item>
+                    </td>
+                    <td class="text-center" style="vertical-align:middle;">
+                      <span class="text-subdued">x{{ _cart_belt_count }}</span>
+                    </td>
+                    <td class="text-end" style="vertical-align:middle;">
+                      {{ 0 | money_with_currency }}
+                    </td>
+                  </tr>
+                {%- endif -%}
               </tbody>
             </table>
 

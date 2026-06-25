@@ -70,7 +70,7 @@
           <p class="{{ text_class }}">{{ line_item.product.title | default: line_item.title }}</p>
         {%- endif -%}
 
-        {%- if _li_is_belt -%}
+        {% comment %} {%- if _li_is_belt -%}
           <div class="bb-cart-belt-price">€ {{ _li_belt_price_display }}</div>
         {%- else -%}
           {%- render 'price-list',
@@ -79,7 +79,7 @@
             extra_bundle_price: extra_bundle_price,
             nfc_bundle_price: nfc_bundle_price
           -%}
-        {%- endif -%}
+        {%- endif -%} {% endcomment %}
       </div>
 
       {%- comment -%} Detect bundle items by "Cintura N" property keys and count belts {%- endcomment -%}
@@ -112,97 +112,20 @@
 
         {%- unless line_item.properties == empty -%}
           {%- if is_bundle_item -%}
-            {%- comment -%}
-              Keys are "Cintura N - Pelle", "Cintura N - Lunghezza", "Cintura N - Fibbia".
-              Split on " - " to extract the group label and field name, then emit a header
-              whenever the "Cintura N" part changes.
-            {%- endcomment -%}
-            <div class="bb-cart-composition" data-media-url="{{ 'bundle-builder-media.json' | asset_url }}" data-belt-count="{{ bundle_belt_count }}">
-              {%- assign last_cintura = '' -%}
-              {%- for property in line_item.properties -%}
-                {%- assign prop_key  = property.first | strip -%}
-                {%- assign prop_first_char = prop_key | truncate: 1, '' -%}
-                {%- if prop_first_char == '_' -%}{%- continue -%}{%- endif -%}
-                {%- assign key_parts = prop_key | split: ' - ' -%}
-                {%- assign cintura_label = key_parts[0] -%}
-                {%- assign field_label   = key_parts[1] -%}
-                {%- if cintura_label != last_cintura -%}
-                  {%- assign last_cintura = cintura_label -%}
-                  <button type="button" class="bb-cart-composition__header" aria-expanded="false">
-                    {{ cintura_label }}:
-                    <img class="bb-cart-combo-img" src="" alt="{{ cintura_label }}" width="20" height="20" style="width:1.2em;height:1.2em;object-fit:cover;border-radius:3px;vertical-align:middle;display:none;">
-                    <svg class="bb-header__arrow" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  </button>
-                {%- endif -%}
-                {%- if field_label != blank and property.last != blank -%}
-                  <div class="bb-cart-composition__row" data-field="{{ field_label | escape }}" data-val="{{ property.last | escape }}">
-                    <span class="bb-cart-composition__key">{{ field_label }}:</span>
-                    <span class="bb-cart-composition__val">{{ property.last }}</span>
-                  </div>
-                {%- endif -%}
-              {%- endfor -%}
-            </div>
-            <script>
-              (function () {
-                var comp = document.querySelector('.bb-cart-composition[data-media-url]');
-                if (!comp) return;
-                var mediaUrl = comp.dataset.mediaUrl;
-                window._bbMediaPromise = window._bbMediaPromise || fetch(mediaUrl).then(function (r) { return r.json(); });
-                window._bbMediaPromise.then(function (media) {
-                  var colorMap = {}, buckleMap = {};
-                  Object.entries(media._colori_cintura || {}).forEach(function (e) { colorMap[e[1]] = e[0]; });
-                  Object.entries(media._fibbie || {}).forEach(function (e) { buckleMap[e[1]] = e[0]; });
-                  document.querySelectorAll('.bb-cart-composition[data-media-url]').forEach(function (container) {
-                    container.querySelectorAll('.bb-cart-composition__header').forEach(function (header) {
-                      var rows = [], next = header.nextElementSibling;
-                      while (next && !next.classList.contains('bb-cart-composition__header')) {
-                        if (next.classList.contains('bb-cart-composition__row')) rows.push(next);
-                        next = next.nextElementSibling;
-                      }
-                      var pelle = '', lunghezza = '', fibbia = '';
-                      rows.forEach(function (row) {
-                        var f = row.dataset.field, v = row.dataset.val;
-                        if (f === 'Pelle') pelle = v;
-                        else if (f === 'Lunghezza') lunghezza = v;
-                        else if (f === 'Fibbia') fibbia = v;
-                      });
-                      var strapKey = colorMap[pelle], buckleKey = buckleMap[fibbia];
-                      var comboKey = strapKey && lunghezza && buckleKey ? strapKey + '__' + lunghezza + '__' + buckleKey : null;
-                      var img = header.querySelector('.bb-cart-combo-img');
-                      if (img && comboKey && media.combinations && media.combinations[comboKey] && media.combinations[comboKey].photo) {
-                        img.src = media.combinations[comboKey].photo;
-                        img.style.display = 'inline-block';
-                      }
-                    });
-                  });
-                  if (media.nfc_card) {
-                    document.querySelectorAll('.bb-nfc-card-img').forEach(function (img) {
-                      img.src = media.nfc_card;
-                      img.style.display = 'inline-block';
-                      var fallback = img.parentElement && img.parentElement.querySelector('.bb-nfc-card-fallback');
-                      if (fallback) fallback.style.display = 'none';
-                    });
-                  }
-                  document.querySelectorAll('.bb-cart-composition[data-belt-count]:not([data-collapse-init])').forEach(function (container) {
-                    container.dataset.collapseInit = '1';
-                    container.querySelectorAll('.bb-cart-composition__header').forEach(function (header) {
-                      var rows = [];
-                      var next = header.nextElementSibling;
-                      while (next && !next.classList.contains('bb-cart-composition__header')) {
-                        rows.push(next);
-                        next = next.nextElementSibling;
-                      }
-                      rows.forEach(function (el) { el.style.display = 'none'; });
-                      header.addEventListener('click', function () {
-                        var expanded = header.getAttribute('aria-expanded') === 'true';
-                        header.setAttribute('aria-expanded', String(!expanded));
-                        rows.forEach(function (el) { el.style.display = expanded ? 'none' : ''; });
-                      });
-                    });
-                  });
-                }).catch(function () {});
-              })();
-            </script>
+            {%- assign _pelle_val = line_item.properties['Cintura 1 - Pelle'] -%}
+            {%- assign _lunghezza_val = line_item.properties['Cintura 1 - Lunghezza'] -%}
+            {%- assign _fibbia_val = line_item.properties['Cintura 1 - Fibbia'] -%}
+            <ul class="bb-cart-props text-subdued">
+              {%- if _pelle_val != blank -%}
+                <li><span class="bb-cart-prop__key">Pelle:</span> {{ _pelle_val }}{% if _lunghezza_val != blank %} - {{ _lunghezza_val }}{% endif %}</li>
+              {%- endif -%}
+              {%- if _fibbia_val != blank -%}
+                <li><span class="bb-cart-prop__key">Fibbia:</span> {{ _fibbia_val }}</li>
+              {%- endif -%}
+            </ul>
+            {%- if _li_is_belt -%}
+              <div class="bb-cart-belt-price">€ {{ _li_belt_price_display }}</div>
+            {%- endif -%}
           {%- else -%}
             <ul class="text-subdued">
               {%- for property in line_item.properties -%}
@@ -231,50 +154,9 @@
         </div>
       {%- endif -%}
 
-      {%- if is_bundle_item and bundle_belt_count > 0 -%}
-        <div
-          class="gift-badge"
-          style="
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-top: 10px;
-          "
-        >
-          <img
-            class="bb-nfc-card-img"
-            src=""
-            alt="NFC Card"
-            width="25"
-            height="25"
-            style="width:1.7em;height:1.7em;object-fit:cover;vertical-align:middle;display:none; border-radius:3px;"
-          >
-          <span class="gift-badge__text">
-            {{ bundle_belt_count }}x NFC Card -
-            <span class="gift-badge__free" style="font-weight: bold;font-size: 15px;">IN REGALO</span>
-          </span>
-        </div>
-      {%- endif -%}
-
       <line-item-quantity class="sm:hidden">
-        <a
-          href="{{ line_item.url_to_remove }}"
-          class="line-item__remove-btn"
-          aria-label="{{ 'cart.order.remove_with_title' | t: title: line_item.title | escape }}"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-          </svg>
+        <a href="{{ line_item.url_to_remove }}" class="link text-xs" aria-label="{{ 'cart.order.remove_with_title' | t: title: line_item.title | escape }}">
+          {{- 'cart.order.remove' | t -}}
         </a>
       </line-item-quantity>
 

@@ -1800,6 +1800,10 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   }
 }
 
+@media screen and (max-width: 699px) {
+  .bb-nfc-mobile-qty { display: inline !important; }
+}
+
 .line-item {
   --line-item-media-width: 5rem;
   align-items: flex-start;

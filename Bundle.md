@@ -83,13 +83,13 @@ List all themes:
 
 shopify theme list --store 099701-dd.myshopify.com
 Pull theme:
-shopify theme pull --store 099701-dd.myshopify.com --theme #192309952838
+shopify theme pull --store 099701-dd.myshopify.com --theme 192309952838
 
 Push theme:
-shopify theme push --store 099701-dd.myshopify.com --theme #192309952838
+shopify theme push --store 099701-dd.myshopify.com --theme 192309952838
 
 Push unpublished (safe preview):
-shopify theme push --store 099701-dd.myshopify.com --theme #192309952838 --unpublished
+shopify theme push --store 099701-dd.myshopify.com --theme 192309952838 --unpublished
 
 Dev (live preview with hot reload):
 shopify theme dev --store 099701-dd.myshopify.com --theme THEME_ID
