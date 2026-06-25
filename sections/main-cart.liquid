@@ -266,50 +266,57 @@
               <div class="bb-cart-recap">
                 {%- render 'cart-discount' -%}
 
-                {%- assign _bb_custom_total = 0 -%}
-                {%- assign _bb_full_price = 0 -%}
-                {%- if _cart_belt_count > 0 -%}
-                  {%- assign _bb_belt_total_pos = 0 -%}
-                  {%- for _ti in cart.items -%}
-                    {%- assign _ti_skip = false -%}
-                    {%- for _p in _ti.properties -%}
-                      {%- if _p.first == '_bundle_extra' or _p.first == '_bundle_nfc' or _p.first == '_bundle_component' or _p.first == '_bundle_privileged' -%}
-                        {%- assign _ti_skip = true -%}{%- break -%}
-                      {%- endif -%}
-                    {%- endfor -%}
-                    {%- if _ti_skip -%}{%- continue -%}{%- endif -%}
-                    {%- if _ti.properties['Cintura 1 - Pelle'] != blank or _ti.properties['Cintura 1 - Lunghezza'] != blank -%}
-                      {%- assign _bb_full_price = _bb_full_price | plus: 4999 -%}
-                      {%- if _bb_belt_total_pos == 0 -%}{%- assign _ti_pc = 4999 -%}
-                      {%- elsif _bb_belt_total_pos == 1 -%}{%- assign _ti_pc = 3999 -%}
-                      {%- elsif _bb_belt_total_pos == 2 -%}{%- assign _ti_pc = 3499 -%}
-                      {%- else -%}{%- assign _ti_pc = 2999 -%}
-                      {%- endif -%}
-                      {%- assign _bb_belt_total_pos = _bb_belt_total_pos | plus: 1 -%}
-                      {%- assign _bb_custom_total = _bb_custom_total | plus: _ti_pc -%}
-                    {%- else -%}
-                      {%- assign _bb_full_price = _bb_full_price | plus: _ti.original_line_price -%}
-                      {%- assign _bb_custom_total = _bb_custom_total | plus: _ti.final_line_price -%}
+                {%- assign _bb_belt_full = 0 -%}
+                {%- assign _bb_belt_total = 0 -%}
+                {%- assign _bb_single_total = 0 -%}
+                {%- assign _bb_belt_total_pos = 0 -%}
+                {%- for _ti in cart.items -%}
+                  {%- assign _ti_skip = false -%}
+                  {%- for _p in _ti.properties -%}
+                    {%- if _p.first == '_bundle_extra' or _p.first == '_bundle_nfc' or _p.first == '_bundle_component' or _p.first == '_bundle_privileged' -%}
+                      {%- assign _ti_skip = true -%}{%- break -%}
                     {%- endif -%}
                   {%- endfor -%}
-                {%- endif -%}
-                {%- assign _bb_savings = _bb_full_price | minus: _bb_custom_total -%}
+                  {%- if _ti_skip -%}{%- continue -%}{%- endif -%}
+                  {%- if _ti.properties['Cintura 1 - Pelle'] != blank or _ti.properties['Cintura 1 - Lunghezza'] != blank -%}
+                    {%- assign _bb_belt_full = _bb_belt_full | plus: 4999 -%}
+                    {%- if _bb_belt_total_pos == 0 -%}{%- assign _ti_pc = 4999 -%}
+                    {%- elsif _bb_belt_total_pos == 1 -%}{%- assign _ti_pc = 3999 -%}
+                    {%- elsif _bb_belt_total_pos == 2 -%}{%- assign _ti_pc = 3499 -%}
+                    {%- else -%}{%- assign _ti_pc = 2999 -%}
+                    {%- endif -%}
+                    {%- assign _bb_belt_total_pos = _bb_belt_total_pos | plus: 1 -%}
+                    {%- assign _bb_belt_total = _bb_belt_total | plus: _ti_pc -%}
+                  {%- else -%}
+                    {%- assign _bb_single_total = _bb_single_total | plus: _ti.final_line_price -%}
+                  {%- endif -%}
+                {%- endfor -%}
+                {%- assign _bb_savings = _bb_belt_full | minus: _bb_belt_total -%}
                 {%- assign _bb_cart_disc = 0 -%}
                 {%- for _da in cart.cart_level_discount_applications -%}
                   {%- assign _bb_cart_disc = _bb_cart_disc | plus: _da.total_allocated_amount -%}
                 {%- endfor -%}
-                {%- assign _bb_final_total = _bb_custom_total | minus: _bb_cart_disc -%}
+                {%- assign _bb_combined = _bb_belt_total | plus: _bb_single_total -%}
+                {%- assign _bb_final_total = _bb_combined | minus: _bb_cart_disc -%}
 
-                {%- if _bb_savings > 0 -%}
-                  <div class="bb-recap-row">
-                    <span>Importo:</span>
-                    <span>{{ _bb_full_price | money }}</span>
-                  </div>
-                  {%- assign _bb_pct = _bb_savings | times: 100.0 | divided_by: _bb_full_price | round: 1 -%}
-                  <div class="bb-recap-row bb-recap-row--discount">
-                    <span>Offerta Set:</span>
-                    <span>-{{ _bb_savings | money }} (-{{ _bb_pct | replace: '.', ',' }}%)</span>
-                  </div>
+                {%- if _cart_belt_count > 0 -%}
+                  {%- if _bb_savings > 0 -%}
+                    <div class="bb-recap-row">
+                      <span>Importo:</span>
+                      <span>{{ _bb_belt_full | money }}</span>
+                    </div>
+                    {%- assign _bb_pct = _bb_savings | times: 100.0 | divided_by: _bb_belt_full | round: 1 -%}
+                    <div class="bb-recap-row bb-recap-row--discount">
+                      <span>Offerta Set:</span>
+                      <span>-{{ _bb_savings | money }} (-{{ _bb_pct | replace: '.', ',' }}%)</span>
+                    </div>
+                  {%- endif -%}
+                  {%- if _bb_single_total > 0 -%}
+                    <div class="bb-recap-row">
+                      <span>Prodotti:</span>
+                      <span>{{ _bb_single_total | money }}</span>
+                    </div>
+                  {%- endif -%}
                 {%- endif -%}
 
                 {%- if cart.cart_level_discount_applications.size > 0 -%}
@@ -336,6 +343,8 @@
                   <span>{{ 'cart.general.total' | t }}:</span>
                   <span>
                     {%- if _cart_belt_count > 0 -%}
+                      {{- _bb_final_total | money_with_currency -}}
+                    {%- elsif _bb_single_total > 0 -%}
                       {{- _bb_final_total | money_with_currency -}}
                     {%- else -%}
                       {{- cart.total_price | money_with_currency -}}
