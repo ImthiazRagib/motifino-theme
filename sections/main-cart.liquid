@@ -51,6 +51,25 @@
           </div>
         </div>
 
+        {%- assign _cart_belt_count = 0 -%}
+        {%- for _ci in cart.items -%}
+          {%- if _ci.properties['Cintura 1 - Pelle'] != blank or _ci.properties['Cintura 1 - Lunghezza'] != blank -%}
+            {%- assign _cart_belt_count = _cart_belt_count | plus: 1 -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {%- if _cart_belt_count == 0 -%}{%- assign _next_belt_price = '49,99' -%}
+        {%- elsif _cart_belt_count == 1 -%}{%- assign _next_belt_price = '39,99' -%}
+        {%- elsif _cart_belt_count == 2 -%}{%- assign _next_belt_price = '34,99' -%}
+        {%- else -%}{%- assign _next_belt_price = '29,99' -%}
+        {%- endif -%}
+        <a href="/pages/bundle?type=set-cintura-singola" class="bb-cart-upsell__btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Aggiungi 1 Cintura
+          <span class="bb-cart-upsell__price">&nbsp;(+€ {{ _next_belt_price }})</span>
+        </a>
+
         <form action="{{ routes.cart_url }}" method="POST" class="cart-page">
           <input type="hidden" name="attributes[products_mobile_grid_mode]" value="">
           <input type="hidden" name="attributes[products_desktop_grid_mode]" value="">
@@ -125,6 +144,23 @@
                     {%- endfor -%}
                   {%- endif -%}
 
+                  {%- assign _li_is_belt_item = false -%}
+                  {%- if line_item.properties['Cintura 1 - Pelle'] != blank or line_item.properties['Cintura 1 - Lunghezza'] != blank -%}
+                    {%- assign _li_is_belt_item = true -%}
+                    {%- assign _li_belt_cart_pos = 0 -%}
+                    {%- for _ci in cart.items -%}
+                      {%- if _ci.key == line_item.key -%}{%- break -%}{%- endif -%}
+                      {%- if _ci.properties['Cintura 1 - Pelle'] != blank or _ci.properties['Cintura 1 - Lunghezza'] != blank -%}
+                        {%- assign _li_belt_cart_pos = _li_belt_cart_pos | plus: 1 -%}
+                      {%- endif -%}
+                    {%- endfor -%}
+                    {%- if _li_belt_cart_pos == 0 -%}{%- assign _li_belt_price_cents = 4999 -%}
+                    {%- elsif _li_belt_cart_pos == 1 -%}{%- assign _li_belt_price_cents = 3999 -%}
+                    {%- elsif _li_belt_cart_pos == 2 -%}{%- assign _li_belt_price_cents = 3499 -%}
+                    {%- else -%}{%- assign _li_belt_price_cents = 2999 -%}
+                    {%- endif -%}
+                  {%- endif -%}
+
                   <tr>
                     <td>{%- render 'line-item', line_item: line_item, show_quantity_selector: false, extra_bundle_price: _row_extra_per_unit, nfc_bundle_price: _row_nfc_per_unit, is_main_bundle: _is_main_bundle -%}</td>
 
@@ -153,6 +189,9 @@
                           {%- assign _nfc_row_total = _row_nfc_per_unit | times: line_item.quantity -%}
                           {%- assign _display_price = _display_price | plus: _nfc_row_total -%}
                         {%- endif -%}
+                      {%- endif -%}
+                      {%- if _li_is_belt_item -%}
+                        {%- assign _display_price = _li_belt_price_cents | times: line_item.quantity -%}
                       {%- endif -%}
                       {%- if settings.currency_code_enabled -%}
                         {{- _display_price | money_with_currency -}}
@@ -218,7 +257,33 @@
                   </div>
                 {%- endif -%}
 
-                {%- if cart.items_subtotal_price != cart.total_price -%}
+                {%- assign _bb_custom_total = 0 -%}
+                {%- if _cart_belt_count > 0 -%}
+                  {%- assign _bb_belt_total_pos = 0 -%}
+                  {%- for _ti in cart.items -%}
+                    {%- assign _ti_skip = false -%}
+                    {%- for _p in _ti.properties -%}
+                      {%- if _p.first == '_bundle_extra' or _p.first == '_bundle_nfc' or _p.first == '_bundle_component' or _p.first == '_bundle_privileged' -%}
+                        {%- assign _ti_skip = true -%}{%- break -%}
+                      {%- endif -%}
+                    {%- endfor -%}
+                    {%- if _ti_skip -%}{%- continue -%}{%- endif -%}
+                    {%- if _ti.properties['Cintura 1 - Pelle'] != blank or _ti.properties['Cintura 1 - Lunghezza'] != blank -%}
+                      {%- if _bb_belt_total_pos == 0 -%}{%- assign _ti_pc = 4999 -%}
+                      {%- elsif _bb_belt_total_pos == 1 -%}{%- assign _ti_pc = 3999 -%}
+                      {%- elsif _bb_belt_total_pos == 2 -%}{%- assign _ti_pc = 3499 -%}
+                      {%- else -%}{%- assign _ti_pc = 2999 -%}
+                      {%- endif -%}
+                      {%- assign _bb_belt_total_pos = _bb_belt_total_pos | plus: 1 -%}
+                      {%- assign _ti_lt = _ti_pc | times: _ti.quantity -%}
+                      {%- assign _bb_custom_total = _bb_custom_total | plus: _ti_lt -%}
+                    {%- else -%}
+                      {%- assign _bb_custom_total = _bb_custom_total | plus: _ti.final_line_price -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+                {%- endif -%}
+
+                {%- if cart.items_subtotal_price != cart.total_price and _cart_belt_count == 0 -%}
                   <div class="h-stack justify-start gap-2">
                     <span class="text-subdued">{{ 'cart.general.subtotal' | t }}:</span>
                     <span class="text-subdued">
@@ -233,7 +298,13 @@
 
                 <div class="h-stack justify-start gap-2">
                   <span class="text-lg">{{ 'cart.general.total' | t }}:</span>
-                  <span class="text-lg">{{- cart.total_price | money_with_currency -}}</span>
+                  <span class="text-lg">
+                    {%- if _cart_belt_count > 0 -%}
+                      {{- _bb_custom_total | money_with_currency -}}
+                    {%- else -%}
+                      {{- cart.total_price | money_with_currency -}}
+                    {%- endif -%}
+                  </span>
                 </div>
 
                 {%- if section.settings.show_shipping_text -%}

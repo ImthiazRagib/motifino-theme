@@ -1860,6 +1860,35 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   }
 }
 
+.bb-cart-upsell__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px 20px;
+  margin-bottom: 16px;
+  border: 1.5px dashed #b8860b;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #b8860b;
+  background: #fffbf0;
+  text-decoration: none;
+  transition: background .15s, border-color .15s;
+  box-sizing: border-box;
+}
+
+.bb-cart-upsell__btn:hover {
+  background: #fff5d6;
+  border-color: #8a6000;
+  color: #8a6000;
+}
+
+.bb-cart-upsell__price {
+  font-weight: 700;
+}
+
 .bb-cart-composition__header {
   display: flex;
   align-items: center;

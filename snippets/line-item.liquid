@@ -17,6 +17,22 @@
   class="line-item"
 >
   {%- assign photo = line_item.properties['_cintura_1_img'] -%}
+  {%- assign _li_is_belt = false -%}
+  {%- if line_item.properties['Cintura 1 - Pelle'] != blank or line_item.properties['Cintura 1 - Lunghezza'] != blank -%}
+    {%- assign _li_is_belt = true -%}
+    {%- assign _li_belt_pos = 0 -%}
+    {%- for _ci in cart.items -%}
+      {%- if _ci.key == line_item.key -%}{%- break -%}{%- endif -%}
+      {%- if _ci.properties['Cintura 1 - Pelle'] != blank or _ci.properties['Cintura 1 - Lunghezza'] != blank -%}
+        {%- assign _li_belt_pos = _li_belt_pos | plus: 1 -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {%- if _li_belt_pos == 0 -%}{%- assign _li_belt_price_display = '49,99' -%}
+    {%- elsif _li_belt_pos == 1 -%}{%- assign _li_belt_price_display = '39,99' -%}
+    {%- elsif _li_belt_pos == 2 -%}{%- assign _li_belt_price_display = '34,99' -%}
+    {%- else -%}{%- assign _li_belt_price_display = '29,99' -%}
+    {%- endif -%}
+  {%- endif -%}
   {%- if photo != blank -%}
     <img src="{{ photo }}" alt="{{ line_item.product.title }}" loading="lazy"
          class="line-item__media" style="object-fit:cover;">
@@ -54,12 +70,16 @@
           <p class="{{ text_class }}">{{ line_item.product.title | default: line_item.title }}</p>
         {%- endif -%}
 
-        {%- render 'price-list',
-          line_item: line_item,
-          context: 'line_item',
-          extra_bundle_price: extra_bundle_price,
-          nfc_bundle_price: nfc_bundle_price
-        -%}
+        {%- if _li_is_belt -%}
+          <div class="bb-cart-belt-price">€ {{ _li_belt_price_display }}</div>
+        {%- else -%}
+          {%- render 'price-list',
+            line_item: line_item,
+            context: 'line_item',
+            extra_bundle_price: extra_bundle_price,
+            nfc_bundle_price: nfc_bundle_price
+          -%}
+        {%- endif -%}
       </div>
 
       {%- comment -%} Detect bundle items by "Cintura N" property keys and count belts {%- endcomment -%}
