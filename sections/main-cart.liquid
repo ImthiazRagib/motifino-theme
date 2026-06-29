@@ -678,6 +678,128 @@
   })();
 </script>
 
+{%- assign _cart_has_belts = false -%}
+{%- for item in cart.items -%}
+  {%- for p in item.properties -%}
+    {%- if p.first contains 'Cintura ' and p.first contains ' - Pelle' -%}
+      {%- assign _cart_has_belts = true -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endfor -%}
+
+{%- if _cart_has_belts -%}
+<style>
+  .bb-checkout-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    flex-shrink: 0;
+    will-change: transform;
+    -webkit-animation: bb-chk-spin 0.7s linear infinite;
+    animation: bb-chk-spin 0.7s linear infinite;
+  }
+  @-webkit-keyframes bb-chk-spin { to { -webkit-transform: rotate(360deg); transform: rotate(360deg); } }
+  @keyframes bb-chk-spin { to { -webkit-transform: rotate(360deg); transform: rotate(360deg); } }
+  .bb-checkout-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+</style>
+
+<script>
+  (function () {
+    var CATALOG_URL = {{ 'bundle-builder-catalog.json' | asset_url | json }};
+    var SET_KEYS = { 1: 'SET-CINTURA-SINGOLA', 2: 'SET-CINTURE-DOPPIO', 3: 'SET-CINTURE-TRIPLO', 4: 'SET-CINTURE-INFINITY' };
+    var SET_EXTRA_KEY = 'SET-CINTURE-EXTRA';
+
+    var checkoutBtn = document.querySelector('.bb-checkout-btn');
+    if (!checkoutBtn) return;
+
+    checkoutBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      var origHTML = checkoutBtn.innerHTML;
+      checkoutBtn.disabled = true;
+      checkoutBtn.innerHTML = '<span class="bb-checkout-spinner"></span>' + origHTML;
+
+      Promise.all([
+        fetch(CATALOG_URL).then(function (r) { return r.json(); }),
+        fetch('/cart.js').then(function (r) { return r.json(); })
+      ]).then(function (res) {
+        var catalog = res[0];
+        var cart    = res[1];
+
+        var allSetVids = new Set(
+          Object.values(SET_KEYS).map(function (k) { return catalog[k]; }).filter(Boolean)
+        );
+        var extraVid = catalog[SET_EXTRA_KEY];
+
+        var totalBelts = 0;
+        var mergedProps = {};
+        var beltN = 0;
+        var updates = {};
+
+        (cart.items || []).forEach(function (item) {
+          var isMain  = allSetVids.has(item.variant_id);
+          var isExtra = extraVid && item.variant_id === extraVid;
+          if (isMain || isExtra) updates[item.variant_id] = 0;
+          if (isMain) {
+            var props = item.properties || {};
+            var maxSlot = 0;
+            Object.keys(props).forEach(function (k) {
+              var m = k.match(/^Cintura (\d+) - Pelle$/);
+              if (m && props[k]) maxSlot = Math.max(maxSlot, parseInt(m[1], 10));
+            });
+            for (var i = 1; i <= maxSlot; i++) {
+              beltN++;
+              totalBelts++;
+              ['Pelle', 'Lunghezza', 'Fibbia'].forEach(function (attr) {
+                var v = props['Cintura ' + i + ' - ' + attr];
+                if (v) mergedProps['Cintura ' + beltN + ' - ' + attr] = v;
+              });
+              var img = props['_cintura_' + i + '_img'];
+              if (img) mergedProps['_cintura_' + beltN + '_img'] = img;
+            }
+            if (!mergedProps._bundle_id && props._bundle_id) mergedProps._bundle_id = props._bundle_id;
+          }
+        });
+
+        if (!Object.keys(updates).length || !totalBelts) {
+          window.location.href = '/checkout';
+          return;
+        }
+
+        fetch('/cart/update.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ updates: updates })
+        }).then(function () {
+          var correctVid = catalog[SET_KEYS[Math.min(totalBelts, 4)]];
+          var items = [];
+          if (correctVid) items.push({ id: correctVid, quantity: 1, properties: mergedProps });
+          if (totalBelts > 4 && extraVid) {
+            items.push({ id: extraVid, quantity: totalBelts - 4, properties: { _bundle_extra: '1', _bundle_id: mergedProps._bundle_id || '' } });
+          }
+          if (!items.length) { window.location.href = '/checkout'; return; }
+          return fetch('/cart/add.js', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items: items })
+          });
+        }).then(function () {
+          window.location.href = '/checkout';
+        }).catch(function () {
+          window.location.href = '/checkout';
+        });
+      }).catch(function () {
+        window.location.href = '/checkout';
+      });
+    }, { capture: true });
+  })();
+</script>
+{%- endif -%}
+
 {% schema %}
 {
   "name": "t:sections.main_cart.name",
