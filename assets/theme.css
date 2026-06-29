@@ -1982,10 +1982,9 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   color: rgb(var(--text-color));
 }
 
-/* ── NFC qty shown only on mobile ───────────────── */
-.bb-nfc-inline-qty { display: none; }
+/* ── NFC qty shown on all screens ───────────────── */
+.bb-nfc-inline-qty { display: inline; }
 @media screen and (max-width: 699px) {
-  .bb-nfc-inline-qty { display: inline; }
   .bb-nfc-mobile-qty { display: inline !important; }
 }
 

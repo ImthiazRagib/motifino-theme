@@ -67,12 +67,11 @@
       {%- endif -%}
 
       <div class="v-stack justify-items-start gap-1">
-        {%- if line_item.url != blank -%}
-          <a style="font-weight:700" href="{{ line_item.url }}" class="{{ text_class }}">
-            {{- line_item.product.title | default: line_item.title -}}
-          </a>
+        {%- assign _display_title = belt_label | default: line_item.product.title | default: line_item.title -%}
+        {%- if line_item.url != blank and belt_label == blank -%}
+          <a style="font-weight:700" href="{{ line_item.url }}" class="{{ text_class }}">{{- _display_title -}}</a>
         {%- else -%}
-          <p class="{{ text_class }}">{{ line_item.product.title | default: line_item.title }}</p>
+          <p style="font-weight:700;" class="{{ text_class }}">{{ _display_title }}</p>
         {%- endif -%}
 
         {% comment %} {%- if _li_is_belt -%}

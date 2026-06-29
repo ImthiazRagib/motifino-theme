@@ -1,4 +1,7 @@
-{%- assign color_scheme_hash = section.settings.color_scheme.settings.background_gradient | default: section.settings.color_scheme.settings.background | md5 -%}
+{%- assign color_scheme_hash = section.settings.color_scheme.settings.background_gradient
+  | default: section.settings.color_scheme.settings.background
+  | md5
+-%}
 
 {%- if section.settings.use_custom_section_spacing -%}
   <style>
@@ -25,7 +28,12 @@
   </style>
 {%- endif -%}
 
-<div class="section-spacing{% if section.settings.use_custom_section_spacing %} section-spacing--custom-bbox{% else %} section-spacing--tight{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }} color-scheme--bg-{{ color_scheme_hash }}"{% if section.settings.use_custom_section_spacing %} style="--main-cart-bbox-pt: {{ section.settings.mobile_section_spacing_top | default: 0 }}px; --main-cart-bbox-pr: {{ section.settings.mobile_section_spacing_right | default: 0 }}px; --main-cart-bbox-pb: {{ section.settings.mobile_section_spacing_bottom | default: 0 }}px; --main-cart-bbox-pl: {{ section.settings.mobile_section_spacing_left | default: 0 }}px; --main-cart-bbox-pt-d: {{ section.settings.desktop_section_spacing_top | default: 0 }}px; --main-cart-bbox-pr-d: {{ section.settings.desktop_section_spacing_right | default: 0 }}px; --main-cart-bbox-pb-d: {{ section.settings.desktop_section_spacing_bottom | default: 0 }}px; --main-cart-bbox-pl-d: {{ section.settings.desktop_section_spacing_left | default: 0 }}px;"{% endif %}>
+<div
+  class="section-spacing{% if section.settings.use_custom_section_spacing %} section-spacing--custom-bbox{% else %} section-spacing--tight{% endif %} color-scheme color-scheme--{{ section.settings.color_scheme.id }} color-scheme--bg-{{ color_scheme_hash }}"
+  {% if section.settings.use_custom_section_spacing %}
+    style="--main-cart-bbox-pt: {{ section.settings.mobile_section_spacing_top | default: 0 }}px; --main-cart-bbox-pr: {{ section.settings.mobile_section_spacing_right | default: 0 }}px; --main-cart-bbox-pb: {{ section.settings.mobile_section_spacing_bottom | default: 0 }}px; --main-cart-bbox-pl: {{ section.settings.mobile_section_spacing_left | default: 0 }}px; --main-cart-bbox-pt-d: {{ section.settings.desktop_section_spacing_top | default: 0 }}px; --main-cart-bbox-pr-d: {{ section.settings.desktop_section_spacing_right | default: 0 }}px; --main-cart-bbox-pb-d: {{ section.settings.desktop_section_spacing_bottom | default: 0 }}px; --main-cart-bbox-pl-d: {{ section.settings.desktop_section_spacing_left | default: 0 }}px;"
+  {% endif %}
+>
   {%- if cart.empty? -%}
     <div class="container container--xs">
       <div class="empty-state">
@@ -57,14 +65,23 @@
             {%- assign _cart_belt_count = _cart_belt_count | plus: 1 -%}
           {%- endif -%}
         {%- endfor -%}
-        {%- if _cart_belt_count == 0 -%}{%- assign _next_belt_price = '49,99' -%}
-        {%- elsif _cart_belt_count == 1 -%}{%- assign _next_belt_price = '39,99' -%}
-        {%- elsif _cart_belt_count == 2 -%}{%- assign _next_belt_price = '34,99' -%}
-        {%- else -%}{%- assign _next_belt_price = '29,99' -%}
+        {%- if _cart_belt_count == 0 -%}
+          {%- assign _next_belt_price = '49,99' -%}
+        {%- elsif _cart_belt_count == 1 -%}
+          {%- assign _next_belt_price = '39,99' -%}
+        {%- elsif _cart_belt_count == 2 -%}
+          {%- assign _next_belt_price = '34,99' -%}
+        {%- else -%}
+          {%- assign _next_belt_price = '29,99' -%}
         {%- endif -%}
         {%- assign _next_belt_num = _cart_belt_count | plus: 1 -%}
         <a href="/pages/bundle?type=set-cintura-singola" class="bb-cart-upsell__card">
-          <img src="https://cdn.shopify.com/s/files/1/0677/2083/9299/files/single_set_1.jpg?v=1776238594" alt="Cintura" class="bb-cart-upsell__img" loading="lazy">
+          <img
+            src="https://cdn.shopify.com/s/files/1/0677/2083/9299/files/single_set_1.jpg?v=1776238594"
+            alt="Cintura"
+            class="bb-cart-upsell__img"
+            loading="lazy"
+          >
           <div class="bb-cart-upsell__info">
             <strong class="bb-cart-upsell__title">Crea la tua {{ _next_belt_num }}° Cintura</strong>
             <div class="bb-cart-upsell__prices">
@@ -91,33 +108,55 @@
               <thead class="order-summary__header">
                 <tr>
                   <th>{{ 'cart.order.product' | t }}</th>
-                  <th class="text-center">{{ 'cart.order.quantity' | t }}</th>
                   <th class="text-end">{{ 'cart.order.total' | t }}</th>
                 </tr>
               </thead>
 
               <tbody class="order-summary__body">
                 {%- assign _extra_belt_unit_price = 0 -%}
-                {%- assign _nfc_belt_unit_price   = 0 -%}
+                {%- assign _nfc_belt_unit_price = 0 -%}
                 {%- for _item in cart.items -%}
                   {%- for _p in _item.properties -%}
-                    {%- if _p.first == '_bundle_extra' -%}{%- assign _extra_belt_unit_price = _item.final_price -%}{%- endif -%}
-                    {%- if _p.first == '_bundle_nfc'   -%}{%- assign _nfc_belt_unit_price   = _item.final_price -%}{%- endif -%}
+                    {%- if _p.first == '_bundle_extra' -%}
+                      {%- assign _extra_belt_unit_price = _item.final_price -%}
+                    {%- endif -%}
+                    {%- if _p.first == '_bundle_nfc' -%}
+                      {%- assign _nfc_belt_unit_price = _item.final_price -%}
+                    {%- endif -%}
                   {%- endfor -%}
                 {%- endfor -%}
+                {%- assign _total_bundles = 0 -%}
+                {%- for _ci2 in cart.items -%}
+                  {%- for _p in _ci2.properties -%}
+                    {%- if _p.first contains 'Cintura ' -%}
+                      {%- assign _total_bundles = _total_bundles | plus: 1 -%}
+                      {%- break -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+                {%- endfor -%}
+                {%- assign _global_belt_num = _total_bundles | plus: 1 -%}
                 {%- for line_item in cart.items -%}
                   {%- assign _is_bundle_extra = false -%}
                   {%- for _p in line_item.properties -%}
-                    {%- if _p.first == '_bundle_extra' -%}{%- assign _is_bundle_extra = true -%}{%- break -%}{%- endif -%}
+                    {%- if _p.first == '_bundle_extra' -%}
+                      {%- assign _is_bundle_extra = true -%}
+                      {%- break -%}
+                    {%- endif -%}
                   {%- endfor -%}
                   {%- if _is_bundle_extra -%}{%- continue -%}{%- endif -%}
-                  {%- if line_item.properties['_bundle_nfc']       == '1' -%}{%- continue -%}{%- endif -%}
-                  {%- if line_item.properties['_bundle_component'] == '1' -%}{%- continue -%}{%- endif -%}
-                  {%- if line_item.properties['_bundle_privileged'] == '1' -%}{%- continue -%}{%- endif -%}
+                  {%- if line_item.properties._bundle_nfc == '1' -%}{%- continue -%}{%- endif -%}
+                  {%- if line_item.properties._bundle_component == '1' -%}{%- continue -%}{%- endif -%}
+                  {%- if line_item.properties._bundle_privileged == '1' -%}{%- continue -%}{%- endif -%}
                   {%- assign _is_main_bundle = false -%}
                   {%- for _p in line_item.properties -%}
-                    {%- if _p.first contains 'Cintura ' -%}{%- assign _is_main_bundle = true -%}{%- break -%}{%- endif -%}
+                    {%- if _p.first contains 'Cintura ' -%}
+                      {%- assign _is_main_bundle = true -%}
+                      {%- break -%}
+                    {%- endif -%}
                   {%- endfor -%}
+                  {%- if _is_main_bundle -%}
+                    {%- assign _global_belt_num = _global_belt_num | minus: 1 -%}
+                  {%- endif -%}
 
                   {%- assign _row_belt_count = 0 -%}
                   {%- assign _row_extra_per_unit = 0 -%}
@@ -152,34 +191,36 @@
                   {%- endif -%}
 
                   {%- assign _li_is_belt_item = false -%}
-                  {%- if line_item.properties['Cintura 1 - Pelle'] != blank or line_item.properties['Cintura 1 - Lunghezza'] != blank -%}
+                  {%- if line_item.properties['Cintura 1 - Pelle'] != blank
+                    or line_item.properties['Cintura 1 - Lunghezza'] != blank
+                  -%}
                     {%- assign _li_is_belt_item = true -%}
-                    {%- assign _li_belt_cart_pos = 0 -%}
-                    {%- for _ci in cart.items -%}
-                      {%- if _ci.key == line_item.key -%}{%- break -%}{%- endif -%}
-                      {%- if _ci.properties['Cintura 1 - Pelle'] != blank or _ci.properties['Cintura 1 - Lunghezza'] != blank -%}
-                        {%- assign _li_belt_cart_pos = _li_belt_cart_pos | plus: 1 -%}
-                      {%- endif -%}
-                    {%- endfor -%}
-                    {%- if _li_belt_cart_pos == 0 -%}{%- assign _li_belt_price_cents = 4999 -%}
-                    {%- elsif _li_belt_cart_pos == 1 -%}{%- assign _li_belt_price_cents = 3999 -%}
-                    {%- elsif _li_belt_cart_pos == 2 -%}{%- assign _li_belt_price_cents = 3499 -%}
-                    {%- else -%}{%- assign _li_belt_price_cents = 2999 -%}
+                    {%- assign _li_belt_price_pos = _global_belt_num | minus: 1 -%}
+                    {%- if _li_belt_price_pos == 0 -%}
+                      {%- assign _li_belt_price_cents = 4999 -%}
+                    {%- elsif _li_belt_price_pos == 1 -%}
+                      {%- assign _li_belt_price_cents = 3999 -%}
+                    {%- elsif _li_belt_price_pos == 2 -%}
+                      {%- assign _li_belt_price_cents = 3499 -%}
+                    {%- else -%}
+                      {%- assign _li_belt_price_cents = 2999 -%}
                     {%- endif -%}
                   {%- endif -%}
 
+                  {%- assign _belt_label = '' -%}
+                  {%- if _is_main_bundle -%}
+                    {%- assign _belt_label = 'Cintura ' | append: _global_belt_num -%}
+                  {%- endif -%}
                   <tr>
-                    <td>{%- render 'line-item', line_item: line_item, show_quantity_selector: false, extra_bundle_price: _row_extra_per_unit, nfc_bundle_price: _row_nfc_per_unit, is_main_bundle: _is_main_bundle -%}</td>
-
-                    <td class="text-center">
-                      <div class="v-stack gap-2">
-                        <line-item-quantity class="v-stack justify-items-center gap-2">
-                          {%- unless hide_quantity -%}
-                            {%- render 'quantity-selector', line_item: line_item, size: 'sm' -%}
-                          {%- endunless -%}
-
-                        </line-item-quantity>
-                      </div>
+                    <td>
+                      {%- render 'line-item',
+                        line_item: line_item,
+                        show_quantity_selector: false,
+                        extra_bundle_price: _row_extra_per_unit,
+                        nfc_bundle_price: _row_nfc_per_unit,
+                        is_main_bundle: _is_main_bundle,
+                        belt_label: _belt_label
+                      -%}
                     </td>
 
                     <td class="text-end">
@@ -197,8 +238,9 @@
                       {%- if _li_is_belt_item -%}
                         {%- assign _display_price = _li_belt_price_cents | times: line_item.quantity -%}
                         {{- _display_price | money -}}
-                        {%- if _li_belt_cart_pos > 0 -%}
-                          <br><span class="bb-li-original-price">{{- line_item.original_line_price | money -}}</span>
+                        {%- if _li_belt_price_pos > 0 -%}
+                          <br>
+                          <span class="bb-li-original-price">{{- line_item.original_line_price | money -}}</span>
                         {%- endif -%}
                       {%- else -%}
                         {%- if settings.currency_code_enabled -%}
@@ -226,9 +268,8 @@
                         >
                         <div class="line-item-info" style="flex:1;min-width:0;">
                           <div class="v-stack justify-items-start gap-1">
-                            <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
-                              <p style="font-weight:700;">Privilege Card Black</p>
-                              <span class="text-subdued bb-nfc-inline-qty" style="margin-left:1rem;">x{{ _cart_belt_count }}</span>
+                            <div>
+                              <p style="font-weight:700;">Privilege Card Black x{{ _cart_belt_count }}</p>
                             </div>
                             <div class="h-stack gap-2" style="align-items:center;">
                               <span style="color:#2a9d2a;font-weight:600;">GRATIS</span>
@@ -237,9 +278,6 @@
                           </div>
                         </div>
                       </line-item>
-                    </td>
-                    <td class="text-center" style="vertical-align:middle;">
-                      <span class="text-subdued">x{{ _cart_belt_count }}</span>
                     </td>
                     <td class="text-end" style="vertical-align:middle;">
                       {{ 0 | money_with_currency }}
@@ -259,7 +297,14 @@
                 <cart-note class="cart-note">
                   {%- assign order_note = 'cart.general.add_order_note' | t -%}
                   {%- assign placeholder = 'cart.general.note_placeholder' | t -%}
-                  {%- render 'input', name: 'note', multiline: 3, label: order_note, value: cart.note, placeholder: placeholder, show_label_as_block: true -%}
+                  {%- render 'input',
+                    name: 'note',
+                    multiline: 3,
+                    label: order_note,
+                    value: cart.note,
+                    placeholder: placeholder,
+                    show_label_as_block: true
+                  -%}
                 </cart-note>
               {%- endif -%}
 
@@ -273,17 +318,28 @@
                 {%- for _ti in cart.items -%}
                   {%- assign _ti_skip = false -%}
                   {%- for _p in _ti.properties -%}
-                    {%- if _p.first == '_bundle_extra' or _p.first == '_bundle_nfc' or _p.first == '_bundle_component' or _p.first == '_bundle_privileged' -%}
-                      {%- assign _ti_skip = true -%}{%- break -%}
+                    {%- if _p.first == '_bundle_extra'
+                      or _p.first == '_bundle_nfc'
+                      or _p.first == '_bundle_component'
+                      or _p.first == '_bundle_privileged'
+                    -%}
+                      {%- assign _ti_skip = true -%}
+                      {%- break -%}
                     {%- endif -%}
                   {%- endfor -%}
                   {%- if _ti_skip -%}{%- continue -%}{%- endif -%}
-                  {%- if _ti.properties['Cintura 1 - Pelle'] != blank or _ti.properties['Cintura 1 - Lunghezza'] != blank -%}
+                  {%- if _ti.properties['Cintura 1 - Pelle'] != blank
+                    or _ti.properties['Cintura 1 - Lunghezza'] != blank
+                  -%}
                     {%- assign _bb_belt_full = _bb_belt_full | plus: 4999 -%}
-                    {%- if _bb_belt_total_pos == 0 -%}{%- assign _ti_pc = 4999 -%}
-                    {%- elsif _bb_belt_total_pos == 1 -%}{%- assign _ti_pc = 3999 -%}
-                    {%- elsif _bb_belt_total_pos == 2 -%}{%- assign _ti_pc = 3499 -%}
-                    {%- else -%}{%- assign _ti_pc = 2999 -%}
+                    {%- if _bb_belt_total_pos == 0 -%}
+                      {%- assign _ti_pc = 4999 -%}
+                    {%- elsif _bb_belt_total_pos == 1 -%}
+                      {%- assign _ti_pc = 3999 -%}
+                    {%- elsif _bb_belt_total_pos == 2 -%}
+                      {%- assign _ti_pc = 3499 -%}
+                    {%- else -%}
+                      {%- assign _ti_pc = 2999 -%}
                     {%- endif -%}
                     {%- assign _bb_belt_total_pos = _bb_belt_total_pos | plus: 1 -%}
                     {%- assign _bb_belt_total = _bb_belt_total | plus: _ti_pc -%}
@@ -324,9 +380,13 @@
                     {%- for discount_application in cart.cart_level_discount_applications -%}
                       <span class="discount-badge text-xs">
                         {%- render 'icon' with 'discount', width: 12 -%}
-                        {{- discount_application.title -}}(-{{ discount_application.total_allocated_amount | money }})
+                        {{- discount_application.title -}}
+                        (-{{ discount_application.total_allocated_amount | money }})
                         {%- if section.settings.allow_discount_application and discount_application.type != '' -%}
-                          <cart-discount-remove-button discount-code="{{ discount_application.title | escape }}" class="h-stack align-center">
+                          <cart-discount-remove-button
+                            discount-code="{{ discount_application.title | escape }}"
+                            class="h-stack align-center"
+                          >
                             <button type="button">{%- render 'icon' with 'close', width: 8 -%}</button>
                           </cart-discount-remove-button>
                         {%- endif -%}
@@ -368,6 +428,7 @@
                 <button type="submit" name="checkout" class="bb-checkout-btn">
                   {{ 'cart.general.checkout' | t }}
                 </button>
+                <script src="{{ 'bb-cart-checkout.js' | asset_url }}" defer></script>
               </div>
             </div>
           </div>
@@ -388,93 +449,93 @@
 </div>
 
 <script>
-(function () {
-  var BB_ITEMS = [
-    {%- for item in cart.items -%}
-      {%- assign _is_nfc        = false -%}
-      {%- assign _is_extra      = false -%}
-      {%- assign _is_component  = false -%}
-      {%- assign _is_privileged = false -%}
-      {%- assign _bundle_id     = '' -%}
-      {%- assign _bc = 0 -%}
-      {%- for _p in item.properties -%}
-        {%- if _p.first == '_bundle_nfc'        -%}{%- assign _is_nfc        = true -%}{%- endif -%}
-        {%- if _p.first == '_bundle_extra'      -%}{%- assign _is_extra      = true -%}{%- endif -%}
-        {%- if _p.first == '_bundle_component'  -%}{%- assign _is_component  = true -%}{%- endif -%}
-        {%- if _p.first == '_bundle_privileged' -%}{%- assign _is_privileged = true -%}{%- endif -%}
-        {%- if _p.first == '_bundle_id'         -%}{%- assign _bundle_id     = _p.last -%}{%- endif -%}
-        {%- if _p.first contains 'Cintura ' and _p.first contains ' - Pelle' -%}{%- assign _bc = _bc | plus: 1 -%}{%- endif -%}
+  (function () {
+    var BB_ITEMS = [
+      {%- for item in cart.items -%}
+        {%- assign _is_nfc        = false -%}
+        {%- assign _is_extra      = false -%}
+        {%- assign _is_component  = false -%}
+        {%- assign _is_privileged = false -%}
+        {%- assign _bundle_id     = '' -%}
+        {%- assign _bc = 0 -%}
+        {%- for _p in item.properties -%}
+          {%- if _p.first == '_bundle_nfc'        -%}{%- assign _is_nfc        = true -%}{%- endif -%}
+          {%- if _p.first == '_bundle_extra'      -%}{%- assign _is_extra      = true -%}{%- endif -%}
+          {%- if _p.first == '_bundle_component'  -%}{%- assign _is_component  = true -%}{%- endif -%}
+          {%- if _p.first == '_bundle_privileged' -%}{%- assign _is_privileged = true -%}{%- endif -%}
+          {%- if _p.first == '_bundle_id'         -%}{%- assign _bundle_id     = _p.last -%}{%- endif -%}
+          {%- if _p.first contains 'Cintura ' and _p.first contains ' - Pelle' -%}{%- assign _bc = _bc | plus: 1 -%}{%- endif -%}
+        {%- endfor -%}
+        { key: {{ item.key | json }}, qty: {{ item.quantity }}, belts: {{ _bc }}, isNfc: {{ _is_nfc }}, isExtra: {{ _is_extra }}, isComponent: {{ _is_component }}, isPrivileged: {{ _is_privileged }}, bundleId: {{ _bundle_id | json }} }{% unless forloop.last %},{% endunless %}
       {%- endfor -%}
-      { key: {{ item.key | json }}, qty: {{ item.quantity }}, belts: {{ _bc }}, isNfc: {{ _is_nfc }}, isExtra: {{ _is_extra }}, isComponent: {{ _is_component }}, isPrivileged: {{ _is_privileged }}, bundleId: {{ _bundle_id | json }} }{% unless forloop.last %},{% endunless %}
-    {%- endfor -%}
-  ];
+    ];
 
-  var hasBundleItems = BB_ITEMS.some(function (i) { return i.isNfc || i.isExtra || i.isComponent || i.isPrivileged; });
-  if (!hasBundleItems) return;
+    var hasBundleItems = BB_ITEMS.some(function (i) { return i.isNfc || i.isExtra || i.isComponent || i.isPrivileged; });
+    if (!hasBundleItems) return;
 
-  function onBundleChange(changedKey, newQty) {
-    var item = BB_ITEMS.find(function (i) { return i.key === changedKey; });
-    if (!item || !item.belts) return false;
+    function onBundleChange(changedKey, newQty) {
+      var item = BB_ITEMS.find(function (i) { return i.key === changedKey; });
+      if (!item || !item.belts) return false;
 
-    var updates = {};
-    updates[changedKey] = newQty;
+      var updates = {};
+      updates[changedKey] = newQty;
 
-    /* Find all satellite items that share this bundle's _bundle_id */
-    var siblings = item.bundleId
-      ? BB_ITEMS.filter(function (i) { return i.key !== changedKey && i.bundleId === item.bundleId; })
-      : [];
+      /* Find all satellite items that share this bundle's _bundle_id */
+      var siblings = item.bundleId
+        ? BB_ITEMS.filter(function (i) { return i.key !== changedKey && i.bundleId === item.bundleId; })
+        : [];
 
-    if (newQty === 0) {
-      /* Removing the bundle — zero out every linked satellite */
-      siblings.forEach(function (s) { updates[s.key] = 0; });
-    } else {
-      /* Quantity change (bundle qty is always 1, but handle it defensively) */
-      var delta = item.qty - newQty;
-      siblings.forEach(function (s) {
-        if (s.isNfc || s.isPrivileged) {
-          updates[s.key] = Math.max(0, s.qty - item.belts * delta);
-        } else if (s.isExtra) {
-          var remainingBelts = BB_ITEMS
-            .filter(function (i) { return i.belts > 0; })
-            .reduce(function (sum, i) {
-              var q = i.key === changedKey ? newQty : i.qty;
-              return sum + i.belts * q;
-            }, 0);
-          updates[s.key] = Math.max(0, remainingBelts - 4);
-        }
-        /* _bundle_component items keep their qty — they track inventory per unit sold */
-      });
+      if (newQty === 0) {
+        /* Removing the bundle — zero out every linked satellite */
+        siblings.forEach(function (s) { updates[s.key] = 0; });
+      } else {
+        /* Quantity change (bundle qty is always 1, but handle it defensively) */
+        var delta = item.qty - newQty;
+        siblings.forEach(function (s) {
+          if (s.isNfc || s.isPrivileged) {
+            updates[s.key] = Math.max(0, s.qty - item.belts * delta);
+          } else if (s.isExtra) {
+            var remainingBelts = BB_ITEMS
+              .filter(function (i) { return i.belts > 0; })
+              .reduce(function (sum, i) {
+                var q = i.key === changedKey ? newQty : i.qty;
+                return sum + i.belts * q;
+              }, 0);
+            updates[s.key] = Math.max(0, remainingBelts - 4);
+          }
+          /* _bundle_component items keep their qty — they track inventory per unit sold */
+        });
+      }
+
+      fetch('/cart/update.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ updates: updates })
+      }).then(function () { window.location.reload(); });
+      return true;
     }
 
-    fetch('/cart/update.js', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ updates: updates })
-    }).then(function () { window.location.reload(); });
-    return true;
-  }
+    /* Intercept remove links (/cart/change?id=...&quantity=0) */
+    document.addEventListener('click', function (e) {
+      var link = e.target.closest('a[href*="/cart/change"]');
+      if (!link) return;
+      var url = new URL(link.href);
+      if (onBundleChange(url.searchParams.get('id'), parseInt(url.searchParams.get('quantity'), 10))) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+    }, { capture: true });
 
-  /* Intercept remove links (/cart/change?id=...&quantity=0) */
-  document.addEventListener('click', function (e) {
-    var link = e.target.closest('a[href*="/cart/change"]');
-    if (!link) return;
-    var url = new URL(link.href);
-    if (onBundleChange(url.searchParams.get('id'), parseInt(url.searchParams.get('quantity'), 10))) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-    }
-  }, { capture: true });
-
-  /* Intercept quantity-input changes */
-  document.addEventListener('change', function (e) {
-    var input = e.target;
-    if (!input.dataset || !input.dataset.lineKey) return;
-    if (onBundleChange(input.dataset.lineKey, parseInt(input.value, 10))) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-    }
-  }, { capture: true });
-})();
+    /* Intercept quantity-input changes */
+    document.addEventListener('change', function (e) {
+      var input = e.target;
+      if (!input.dataset || !input.dataset.lineKey) return;
+      if (onBundleChange(input.dataset.lineKey, parseInt(input.value, 10))) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+    }, { capture: true });
+  })();
 </script>
 
 {% schema %}

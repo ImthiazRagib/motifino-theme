@@ -86,7 +86,7 @@ Pull theme:
 shopify theme pull --store 099701-dd.myshopify.com --theme 192309952838
 
 Push theme:
-shopify theme push --store 099701-dd.myshopify.com --theme 192309952838
+shopify theme push --store 099701-dd.myshopify.com --theme 192362152262
 
 Push unpublished (safe preview):
 shopify theme push --store 099701-dd.myshopify.com --theme 192309952838 --unpublished
@@ -95,3 +95,9 @@ Dev (live preview with hot reload):
 shopify theme dev --store 099701-dd.myshopify.com --theme THEME_ID
 
 Run the list command first to get your THEME_ID, then substitute it into the pull/push commands.
+
+
+MOTIFINO - 1	56856499913030
+MOTIFINO - 2	56856501223750
+MOTIFINO - 3	56856511021382
+EXTRA MOTIFINO - 4	56856511971654
