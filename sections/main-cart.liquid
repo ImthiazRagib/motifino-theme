@@ -541,8 +541,15 @@
         : [];
 
       if (newQty === 0) {
-        /* Removing the bundle — zero out every linked satellite */
-        siblings.forEach(function (s) { updates[s.key] = 0; });
+        /* Removing the bundle — zero out ALL hidden satellites across every session.
+           After proceedToCheckout merges bundles into one SET-CINTURA, orphaned
+           NFC/component items from earlier sessions carry different bundleIds and
+           would be missed by a same-bundleId filter. */
+        BB_ITEMS.forEach(function (i) {
+          if (i.key !== changedKey && (i.isNfc || i.isExtra || i.isComponent || i.isPrivileged)) {
+            updates[i.key] = 0;
+          }
+        });
       } else {
         /* Quantity change (bundle qty is always 1, but handle it defensively) */
         var delta = item.qty - newQty;

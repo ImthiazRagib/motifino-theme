@@ -1564,7 +1564,8 @@
         + (bundle.price * bundle.qty).toFixed(2).replace('.', ',') + '</span>'
         + '</div>'
         + '<div class="bb-cart__bundle-body">'
-        + bundle.belts.map(function (belt, i) {
+        + bundle.belts.slice().reverse().map(function (belt, ri) {
+          const i = bundle.belts.length - 1 - ri;
           const strap = STRAPS[belt.strap] || {};
           const buckle = BUCKLES[belt.buckle] || {};
           const mockupHTML = beltVisualHTML(belt, 'Cintura ' + (i + 1));
@@ -1807,7 +1808,7 @@
       (cart.items || []).forEach(function (item) {
         const isMainSetCintura = allSetCinturaIds.has(item.variant_id);
         const isExtraSetCintura = extraVid > 0 && item.variant_id === extraVid;
-        if (isMainSetCintura || isExtraSetCintura) updates[item.key] = 0;
+        if (isMainSetCintura || isExtraSetCintura) updates[item.variant_id] = 0;
         if (isMainSetCintura) {
           const props = item.properties || {};
           let maxSlot = 0;
