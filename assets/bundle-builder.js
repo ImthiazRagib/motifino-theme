@@ -1670,9 +1670,10 @@
     });
     const currentBeltCount = allBelts.length;
 
-    /* Placeholder tier for this session — corrected after the cart is re-read below */
-    const extraVariantId = _bbCatalog && Number(_bbCatalog[SET_EXTRA_KEY]);
+    /* Session-based tier — the cart checkout button will recalculate the
+       correct tier across all sessions before redirecting to Shopify checkout. */
     const variantId = _bbCatalog && Number(_bbCatalog[SET_KEYS[Math.min(currentBeltCount, 4)]]);
+    const extraVariantId = _bbCatalog && Number(_bbCatalog[SET_EXTRA_KEY]);
 
     /* Unique ID links the main bundle item to its hidden components so cart
        removal of the bundle also clears straps, buckles, NFC, and extras. */
@@ -1692,6 +1693,11 @@
     });
 
     const items = [{ id: variantId, quantity: 1, properties }];
+
+    /* Extra belts beyond 4 in this session */
+    if (currentBeltCount > 4 && extraVariantId > 0) {
+      items.push({ id: extraVariantId, quantity: currentBeltCount - 4, properties: { _bundle_extra: '1', _bundle_id: bundleId } });
+    }
 
     /* Add NFC-CARD — one card per belt in this session only;
        existing bundles already carry their own NFC items in the cart. */
@@ -1733,7 +1739,7 @@
     const validItems = items.filter(function (item) {
       return Number.isInteger(item.id) && item.id > 0;
     });
-    console.log('[BundleBuilder] currentBelts =', currentBeltCount, '| sessionVariantId =', variantId);
+    console.log('[BundleBuilder] session belts =', currentBeltCount, '| variantId =', variantId, '| bundleId =', bundleId);
     console.log('[BundleBuilder] Cart payload →', JSON.stringify(validItems, null, 2));
 
     if (!validItems.length) {
@@ -1790,71 +1796,6 @@
     }
 
     if (resp.ok) {
-      /* Re-read the live cart to count ALL belt rows across every bundle session */
-      const cart = await fetch('/cart.js').then(function (r) { return r.json(); });
-
-      const allSetCinturaIds = new Set(
-        Object.values(SET_KEYS)
-          .map(function (k) { return Number(_bbCatalog && _bbCatalog[k] || 0); })
-          .filter(function (v) { return v > 0; })
-      );
-      const extraVid = Number(_bbCatalog && _bbCatalog[SET_EXTRA_KEY] || 0);
-
-      let totalBeltsInCart = 0;
-      const mergedProps = { _bundle_id: bundleId };
-      let mergedBeltN = 0;
-      const updates = {};
-
-      (cart.items || []).forEach(function (item) {
-        const isMainSetCintura = allSetCinturaIds.has(item.variant_id);
-        const isExtraSetCintura = extraVid > 0 && item.variant_id === extraVid;
-        if (isMainSetCintura || isExtraSetCintura) updates[item.variant_id] = 0;
-        if (isMainSetCintura) {
-          const props = item.properties || {};
-          let maxSlot = 0;
-          Object.keys(props).forEach(function (k) {
-            const m = k.match(/^Cintura (\d+) - Pelle$/);
-            if (m && props[k]) maxSlot = Math.max(maxSlot, parseInt(m[1], 10));
-          });
-          for (let i = 1; i <= maxSlot; i++) {
-            mergedBeltN++;
-            totalBeltsInCart++;
-            ['Pelle', 'Lunghezza', 'Fibbia'].forEach(function (attr) {
-              const v = props['Cintura ' + i + ' - ' + attr];
-              if (v) mergedProps['Cintura ' + mergedBeltN + ' - ' + attr] = v;
-            });
-            const img = props['_cintura_' + i + '_img'];
-            if (img) mergedProps['_cintura_' + mergedBeltN + '_img'] = img;
-          }
-        }
-      });
-
-      /* Zero all existing SET-CINTURA + EXTRA items */
-      if (Object.keys(updates).length > 0) {
-        await fetch('/cart/update.js', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ updates: updates }),
-        });
-      }
-
-      /* Add ONE correct SET-CINTURA for the true total belt count */
-      const correctKey = SET_KEYS[Math.min(totalBeltsInCart, 4)];
-      const correctVid = Number(_bbCatalog && _bbCatalog[correctKey] || 0);
-      const correctItems = [];
-      if (correctVid > 0) correctItems.push({ id: correctVid, quantity: 1, properties: mergedProps });
-      if (totalBeltsInCart > 4 && extraVid > 0) {
-        correctItems.push({ id: extraVid, quantity: totalBeltsInCart - 4, properties: { _bundle_extra: '1', _bundle_id: bundleId } });
-      }
-      if (correctItems.length > 0) {
-        await fetch('/cart/add.js', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items: correctItems }),
-        });
-      }
-
-      console.log('[BundleBuilder] totalBeltsInCart:', totalBeltsInCart, '| tier:', correctKey, '| variantId:', correctVid);
       window.location.href = '/cart';
     } else {
       const errData = await resp.json().catch(function () { return {}; });
