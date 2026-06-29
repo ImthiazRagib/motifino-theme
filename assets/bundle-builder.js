@@ -1662,13 +1662,31 @@
     const SET_KEYS = { 1: 'SET-CINTURA-SINGOLA', 2: 'SET-CINTURE-DOPPIO', 3: 'SET-CINTURE-TRIPLO', 4: 'SET-CINTURE-INFINITY' };
     const SET_EXTRA_KEY = 'SET-CINTURE-EXTRA';
 
-    /* Flatten all belts across all pending + current bundles */
+    /* Flatten belts from the current builder session */
     const allBelts = [];
     state.cartBundles.forEach(function (bundle) {
       bundle.belts.forEach(function (belt) { allBelts.push(belt); });
     });
+    const currentBeltCount = allBelts.length;
 
-    const totalBelts = allBelts.length;
+    /* Fetch live cart — count existing belt items to determine total */
+    let existingBelts = 0;
+    try {
+      const cartData = await fetch('/cart.js').then(function (r) { return r.json(); });
+      (cartData.items || []).forEach(function (item) {
+        const props = item.properties || {};
+        let max = 0;
+        Object.keys(props).forEach(function (k) {
+          const m = k.match(/^Cintura (\d+) - (Pelle|Lunghezza)$/);
+          if (m && props[k]) { const n = parseInt(m[1], 10); if (n > max) max = n; }
+        });
+        if (max > 0) existingBelts += max * item.quantity;
+      });
+    } catch (e) {
+      console.warn('[BundleBuilder] Could not fetch cart for belt count:', e);
+    }
+
+    const totalBelts = existingBelts + currentBeltCount;
     const variantId = _bbCatalog && Number(_bbCatalog[SET_KEYS[Math.min(totalBelts, 4)]]);
 
     /* Unique ID links the main bundle item to its hidden components so cart
@@ -1735,7 +1753,7 @@
     const validItems = items.filter(function (item) {
       return Number.isInteger(item.id) && item.id > 0;
     });
-    console.log('[BundleBuilder] totalBelts =', totalBelts, '| setCinturaKey =', SET_KEYS[Math.min(totalBelts, 4)], '| variantId =', variantId);
+    console.log('[BundleBuilder] existingBelts =', existingBelts, '| currentBelts =', currentBeltCount, '| totalBelts =', totalBelts, '| setCinturaKey =', SET_KEYS[Math.min(totalBelts, 4)], '| variantId =', variantId);
     console.log('[BundleBuilder] Cart payload →', JSON.stringify(validItems, null, 2));
 
     if (!validItems.length) {

@@ -61,9 +61,11 @@
 
         {%- assign _cart_belt_count = 0 -%}
         {%- for _ci in cart.items -%}
-          {%- if _ci.properties['Cintura 1 - Pelle'] != blank or _ci.properties['Cintura 1 - Lunghezza'] != blank -%}
-            {%- assign _cart_belt_count = _cart_belt_count | plus: 1 -%}
-          {%- endif -%}
+          {%- for _p in _ci.properties -%}
+            {%- if _p.first contains 'Cintura ' and _p.first contains ' - Pelle' -%}
+              {%- assign _cart_belt_count = _cart_belt_count | plus: 1 -%}
+            {%- endif -%}
+          {%- endfor -%}
         {%- endfor -%}
         {%- if _cart_belt_count == 0 -%}
           {%- assign _next_belt_price = '49,99' -%}
@@ -128,9 +130,8 @@
                 {%- assign _total_bundles = 0 -%}
                 {%- for _ci2 in cart.items -%}
                   {%- for _p in _ci2.properties -%}
-                    {%- if _p.first contains 'Cintura ' -%}
+                    {%- if _p.first contains 'Cintura ' and _p.first contains ' - Pelle' -%}
                       {%- assign _total_bundles = _total_bundles | plus: 1 -%}
-                      {%- break -%}
                     {%- endif -%}
                   {%- endfor -%}
                 {%- endfor -%}
@@ -143,6 +144,7 @@
                       {%- break -%}
                     {%- endif -%}
                   {%- endfor -%}
+                  {% comment %} Hidden Rows {% endcomment %}
                   {%- if _is_bundle_extra -%}{%- continue -%}{%- endif -%}
                   {%- if line_item.properties._bundle_nfc == '1' -%}{%- continue -%}{%- endif -%}
                   {%- if line_item.properties._bundle_component == '1' -%}{%- continue -%}{%- endif -%}
@@ -154,10 +156,6 @@
                       {%- break -%}
                     {%- endif -%}
                   {%- endfor -%}
-                  {%- if _is_main_bundle -%}
-                    {%- assign _global_belt_num = _global_belt_num | minus: 1 -%}
-                  {%- endif -%}
-
                   {%- assign _row_belt_count = 0 -%}
                   {%- assign _row_extra_per_unit = 0 -%}
                   {%- assign _row_nfc_per_unit = 0 -%}
@@ -190,67 +188,108 @@
                     {%- endfor -%}
                   {%- endif -%}
 
-                  {%- assign _li_is_belt_item = false -%}
-                  {%- if line_item.properties['Cintura 1 - Pelle'] != blank
-                    or line_item.properties['Cintura 1 - Lunghezza'] != blank
-                  -%}
-                    {%- assign _li_is_belt_item = true -%}
-                    {%- assign _li_belt_price_pos = _global_belt_num | minus: 1 -%}
-                    {%- if _li_belt_price_pos == 0 -%}
-                      {%- assign _li_belt_price_cents = 4999 -%}
-                    {%- elsif _li_belt_price_pos == 1 -%}
-                      {%- assign _li_belt_price_cents = 3999 -%}
-                    {%- elsif _li_belt_price_pos == 2 -%}
-                      {%- assign _li_belt_price_cents = 3499 -%}
-                    {%- else -%}
-                      {%- assign _li_belt_price_cents = 2999 -%}
-                    {%- endif -%}
-                  {%- endif -%}
-
-                  {%- assign _belt_label = '' -%}
-                  {%- if _is_main_bundle -%}
-                    {%- assign _belt_label = 'Cintura ' | append: _global_belt_num -%}
-                  {%- endif -%}
-                  <tr>
-                    <td>
-                      {%- render 'line-item',
-                        line_item: line_item,
-                        show_quantity_selector: false,
-                        extra_bundle_price: _row_extra_per_unit,
-                        nfc_bundle_price: _row_nfc_per_unit,
-                        is_main_bundle: _is_main_bundle,
-                        belt_label: _belt_label
-                      -%}
-                    </td>
-
-                    <td class="text-end">
-                      {%- assign _display_price = line_item.final_line_price -%}
-                      {%- if _is_main_bundle -%}
-                        {%- if _row_extra_per_unit > 0 -%}
-                          {%- assign _extra_row_total = _row_extra_per_unit | times: line_item.quantity -%}
-                          {%- assign _display_price = _display_price | plus: _extra_row_total -%}
-                        {%- endif -%}
-                        {%- if _row_nfc_per_unit > 0 -%}
-                          {%- assign _nfc_row_total = _row_nfc_per_unit | times: line_item.quantity -%}
-                          {%- assign _display_price = _display_price | plus: _nfc_row_total -%}
-                        {%- endif -%}
-                      {%- endif -%}
-                      {%- if _li_is_belt_item -%}
-                        {%- assign _display_price = _li_belt_price_cents | times: line_item.quantity -%}
-                        {{- _display_price | money -}}
-                        {%- if _li_belt_price_pos > 0 -%}
-                          <br>
-                          <span class="bb-li-original-price">{{- line_item.original_line_price | money -}}</span>
-                        {%- endif -%}
+                  {%- if _is_main_bundle and _row_belt_count > 1 -%}
+                    {%- comment -%} Multi-belt bundle: one row per belt {%- endcomment -%}
+                    {%- for _bi in (1.._row_belt_count) -%}
+                      {%- assign _global_belt_num = _global_belt_num | minus: 1 -%}
+                      {%- assign _belt_label = 'Cintura ' | append: _global_belt_num -%}
+                      {%- assign _li_belt_price_pos = _global_belt_num | minus: 1 -%}
+                      {%- assign _local_belt_n = _row_belt_count | minus: _bi | plus: 1 -%}
+                      {%- if _li_belt_price_pos == 0 -%}
+                        {%- assign _li_belt_price_cents = 4999 -%}
+                      {%- elsif _li_belt_price_pos == 1 -%}
+                        {%- assign _li_belt_price_cents = 3999 -%}
+                      {%- elsif _li_belt_price_pos == 2 -%}
+                        {%- assign _li_belt_price_cents = 3499 -%}
                       {%- else -%}
-                        {%- if settings.currency_code_enabled -%}
-                          {{- _display_price | money_with_currency -}}
-                        {%- else -%}
-                          {{- _display_price | money -}}
-                        {%- endif -%}
+                        {%- assign _li_belt_price_cents = 2999 -%}
                       {%- endif -%}
-                    </td>
-                  </tr>
+                      <tr>
+                        <td>
+                          {%- render 'line-item',
+                            line_item: line_item,
+                            show_quantity_selector: false,
+                            is_main_bundle: true,
+                            belt_label: _belt_label,
+                            belt_n: _local_belt_n,
+                            belt_remove_total: _row_belt_count
+                          -%}
+                        </td>
+                        <td class="text-end">
+                          {%- assign _display_price = _li_belt_price_cents | times: line_item.quantity -%}
+                          {{- _display_price | money -}}
+                          {%- if _li_belt_price_pos > 0 -%}
+                            <br>
+                            <span class="bb-li-original-price">{{- 4999 | times: line_item.quantity | money -}}</span>
+                          {%- endif -%}
+                        </td>
+                      </tr>
+                    {%- endfor -%}
+                  {%- else -%}
+                    {%- comment -%} Single-belt item or non-bundle: one row {%- endcomment -%}
+                    {%- if _is_main_bundle -%}
+                      {%- assign _global_belt_num = _global_belt_num | minus: 1 -%}
+                    {%- endif -%}
+                    {%- assign _li_is_belt_item = false -%}
+                    {%- if line_item.properties['Cintura 1 - Pelle'] != blank
+                      or line_item.properties['Cintura 1 - Lunghezza'] != blank
+                    -%}
+                      {%- assign _li_is_belt_item = true -%}
+                      {%- assign _li_belt_price_pos = _global_belt_num | minus: 1 -%}
+                      {%- if _li_belt_price_pos == 0 -%}
+                        {%- assign _li_belt_price_cents = 4999 -%}
+                      {%- elsif _li_belt_price_pos == 1 -%}
+                        {%- assign _li_belt_price_cents = 3999 -%}
+                      {%- elsif _li_belt_price_pos == 2 -%}
+                        {%- assign _li_belt_price_cents = 3499 -%}
+                      {%- else -%}
+                        {%- assign _li_belt_price_cents = 2999 -%}
+                      {%- endif -%}
+                    {%- endif -%}
+                    {%- assign _belt_label = '' -%}
+                    {%- if _is_main_bundle -%}
+                      {%- assign _belt_label = 'Cintura ' | append: _global_belt_num -%}
+                    {%- endif -%}
+                    <tr>
+                      <td>
+                        {%- render 'line-item',
+                          line_item: line_item,
+                          show_quantity_selector: false,
+                          extra_bundle_price: _row_extra_per_unit,
+                          nfc_bundle_price: _row_nfc_per_unit,
+                          is_main_bundle: _is_main_bundle,
+                          belt_label: _belt_label
+                        -%}
+                      </td>
+                      <td class="text-end">
+                        {%- assign _display_price = line_item.final_line_price -%}
+                        {%- if _is_main_bundle -%}
+                          {%- if _row_extra_per_unit > 0 -%}
+                            {%- assign _extra_row_total = _row_extra_per_unit | times: line_item.quantity -%}
+                            {%- assign _display_price = _display_price | plus: _extra_row_total -%}
+                          {%- endif -%}
+                          {%- if _row_nfc_per_unit > 0 -%}
+                            {%- assign _nfc_row_total = _row_nfc_per_unit | times: line_item.quantity -%}
+                            {%- assign _display_price = _display_price | plus: _nfc_row_total -%}
+                          {%- endif -%}
+                        {%- endif -%}
+                        {%- if _li_is_belt_item -%}
+                          {%- assign _display_price = _li_belt_price_cents | times: line_item.quantity -%}
+                          {{- _display_price | money -}}
+                          {%- if _li_belt_price_pos > 0 -%}
+                            <br>
+                            <span class="bb-li-original-price">{{- line_item.original_line_price | money -}}</span>
+                          {%- endif -%}
+                        {%- else -%}
+                          {%- if settings.currency_code_enabled -%}
+                            {{- _display_price | money_with_currency -}}
+                          {%- else -%}
+                            {{- _display_price | money -}}
+                          {%- endif -%}
+                        {%- endif -%}
+                      </td>
+                    </tr>
+                  {%- endif -%}
                 {%- endfor -%}
                 {%- if _cart_belt_count > 0 -%}
                   {%- assign _nfc_total_value = _cart_belt_count | times: 1999 -%}
@@ -331,18 +370,26 @@
                   {%- if _ti.properties['Cintura 1 - Pelle'] != blank
                     or _ti.properties['Cintura 1 - Lunghezza'] != blank
                   -%}
-                    {%- assign _bb_belt_full = _bb_belt_full | plus: 4999 -%}
-                    {%- if _bb_belt_total_pos == 0 -%}
-                      {%- assign _ti_pc = 4999 -%}
-                    {%- elsif _bb_belt_total_pos == 1 -%}
-                      {%- assign _ti_pc = 3999 -%}
-                    {%- elsif _bb_belt_total_pos == 2 -%}
-                      {%- assign _ti_pc = 3499 -%}
-                    {%- else -%}
-                      {%- assign _ti_pc = 2999 -%}
-                    {%- endif -%}
-                    {%- assign _bb_belt_total_pos = _bb_belt_total_pos | plus: 1 -%}
-                    {%- assign _bb_belt_total = _bb_belt_total | plus: _ti_pc -%}
+                    {%- assign _ti_belt_slots = 0 -%}
+                    {%- for _tp in _ti.properties -%}
+                      {%- if _tp.first contains 'Cintura ' and _tp.first contains ' - Pelle' -%}
+                        {%- assign _ti_belt_slots = _ti_belt_slots | plus: 1 -%}
+                      {%- endif -%}
+                    {%- endfor -%}
+                    {%- for _slot in (1.._ti_belt_slots) -%}
+                      {%- assign _bb_belt_full = _bb_belt_full | plus: 4999 -%}
+                      {%- if _bb_belt_total_pos == 0 -%}
+                        {%- assign _ti_pc = 4999 -%}
+                      {%- elsif _bb_belt_total_pos == 1 -%}
+                        {%- assign _ti_pc = 3999 -%}
+                      {%- elsif _bb_belt_total_pos == 2 -%}
+                        {%- assign _ti_pc = 3499 -%}
+                      {%- else -%}
+                        {%- assign _ti_pc = 2999 -%}
+                      {%- endif -%}
+                      {%- assign _bb_belt_total_pos = _bb_belt_total_pos | plus: 1 -%}
+                      {%- assign _bb_belt_total = _bb_belt_total | plus: _ti_pc -%}
+                    {%- endfor -%}
                   {%- else -%}
                     {%- assign _bb_single_total = _bb_single_total | plus: _ti.final_line_price -%}
                   {%- endif -%}
@@ -542,6 +589,84 @@
         e.preventDefault();
         e.stopImmediatePropagation();
       }
+    }, { capture: true });
+  })();
+</script>
+
+<script>
+  (function () {
+    function removeSingleBelt(btn) {
+      btn.disabled = true;
+      var itemKey = btn.dataset.itemKey;
+      var beltN = parseInt(btn.dataset.beltN, 10);
+      var beltTotal = parseInt(btn.dataset.beltTotal, 10);
+      var bundleId = btn.dataset.bundleId;
+      var newBeltCount = beltTotal - 1;
+
+      fetch('/cart.js')
+        .then(function (r) { return r.json(); })
+        .then(function (cart) {
+          var mainItem = cart.items.find(function (i) { return i.key === itemKey; });
+          if (!mainItem) { window.location.reload(); return; }
+
+          var oldProps = mainItem.properties || {};
+
+          /* Build updated properties: skip beltN, renumber remaining from 1 */
+          var newProps = { _bundle_id: bundleId };
+          var newN = 1;
+          for (var i = 1; i <= beltTotal; i++) {
+            if (i === beltN) continue;
+            newProps['Cintura ' + newN + ' - Pelle']     = oldProps['Cintura ' + i + ' - Pelle'] || '';
+            newProps['Cintura ' + newN + ' - Lunghezza'] = oldProps['Cintura ' + i + ' - Lunghezza'] || '';
+            newProps['Cintura ' + newN + ' - Fibbia']    = oldProps['Cintura ' + i + ' - Fibbia'] || '';
+            var img = oldProps['_cintura_' + i + '_img'];
+            if (img) newProps['_cintura_' + newN + '_img'] = img;
+            newN++;
+          }
+
+          var nfcItem = cart.items.find(function (i) {
+            return i.properties && i.properties._bundle_id === bundleId && i.properties._bundle_nfc === '1';
+          });
+
+          /* Decrement NFC first, then update main item properties in place.
+             In-place update via change.js keeps the item at its original cart
+             position — avoids re-ordering when remove+re-add would append to end. */
+          var nfcStep = nfcItem
+            ? fetch('/cart/change.js', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: nfcItem.key, quantity: Math.max(0, nfcItem.quantity - 1) })
+              })
+            : Promise.resolve();
+
+          return nfcStep.then(function () {
+            if (newBeltCount === 0) {
+              return fetch('/cart/change.js', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: itemKey, quantity: 0 })
+              });
+            }
+            return fetch('/cart/change.js', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: itemKey, quantity: 1, properties: newProps })
+            });
+          });
+        })
+        .then(function () { window.location.reload(); })
+        .catch(function (e) {
+          console.error('[BundleBuilder] removeSingleBelt error:', e);
+          window.location.reload();
+        });
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('.bb-remove-belt');
+      if (!btn) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      removeSingleBelt(btn);
     }, { capture: true });
   })();
 </script>

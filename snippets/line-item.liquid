@@ -16,7 +16,9 @@
 <line-item
   class="line-item"
 >
-  {%- assign photo = line_item.properties['_cintura_1_img'] -%}
+  {%- assign _bn = belt_n | default: 1 -%}
+  {%- assign _bn_img_key = '_cintura_' | append: _bn | append: '_img' -%}
+  {%- assign photo = line_item.properties[_bn_img_key] -%}
   {%- assign _li_is_belt = false -%}
   {%- if line_item.properties['Cintura 1 - Pelle'] != blank or line_item.properties['Cintura 1 - Lunghezza'] != blank -%}
     {%- assign _li_is_belt = true -%}
@@ -33,10 +35,22 @@
     {%- else -%}{%- assign _li_belt_price_display = '29,99' -%}
     {%- endif -%}
   {%- endif -%}
+  {%- assign _bn_remove_total = belt_remove_total | default: 1 -%}
   <div class="bb-line-item-img-wrap">
-    <a href="{{ line_item.url_to_remove }}" class="bb-remove-x" aria-label="{{ 'cart.order.remove_with_title' | t: title: line_item.title | escape }}">
-      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </a>
+    {%- if _bn_remove_total > 1 -%}
+      <button type="button" class="bb-remove-x bb-remove-belt"
+        data-item-key="{{ line_item.key }}"
+        data-belt-n="{{ _bn }}"
+        data-belt-total="{{ _bn_remove_total }}"
+        data-bundle-id="{{ line_item.properties._bundle_id | escape }}"
+        aria-label="{{ 'cart.order.remove_with_title' | t: title: line_item.title | escape }}">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    {%- else -%}
+      <a href="{{ line_item.url_to_remove }}" class="bb-remove-x" aria-label="{{ 'cart.order.remove_with_title' | t: title: line_item.title | escape }}">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </a>
+    {%- endif -%}
     {%- if photo != blank -%}
       <img src="{{ photo }}" alt="{{ line_item.product.title }}" loading="lazy"
            class="line-item__media" style="object-fit:cover;">
@@ -116,9 +130,12 @@
 
         {%- unless line_item.properties == empty -%}
           {%- if is_bundle_item -%}
-            {%- assign _pelle_val = line_item.properties['Cintura 1 - Pelle'] -%}
-            {%- assign _lunghezza_val = line_item.properties['Cintura 1 - Lunghezza'] -%}
-            {%- assign _fibbia_val = line_item.properties['Cintura 1 - Fibbia'] -%}
+            {%- assign _bn_pelle_key = 'Cintura ' | append: _bn | append: ' - Pelle' -%}
+            {%- assign _bn_lunghezza_key = 'Cintura ' | append: _bn | append: ' - Lunghezza' -%}
+            {%- assign _bn_fibbia_key = 'Cintura ' | append: _bn | append: ' - Fibbia' -%}
+            {%- assign _pelle_val = line_item.properties[_bn_pelle_key] -%}
+            {%- assign _lunghezza_val = line_item.properties[_bn_lunghezza_key] -%}
+            {%- assign _fibbia_val = line_item.properties[_bn_fibbia_key] -%}
             <ul class="bb-cart-props">
               {%- if _pelle_val != blank -%}
                 <li><span class="bb-cart-prop__key">Pelle:</span> {{ _pelle_val }}{% if _lunghezza_val != blank %} - {{ _lunghezza_val }}{% endif %}</li>
