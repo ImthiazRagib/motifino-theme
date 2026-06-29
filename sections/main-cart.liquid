@@ -731,9 +731,9 @@
         var cart    = res[1];
 
         var allSetVids = new Set(
-          Object.values(SET_KEYS).map(function (k) { return catalog[k]; }).filter(Boolean)
+          Object.values(SET_KEYS).map(function (k) { return catalog[k] ? Number(catalog[k]) : null; }).filter(Boolean)
         );
-        var extraVid = catalog[SET_EXTRA_KEY];
+        var extraVid = catalog[SET_EXTRA_KEY] ? Number(catalog[SET_EXTRA_KEY]) : 0;
 
         var totalBelts = 0;
         var mergedProps = {};
@@ -777,7 +777,7 @@
         }).then(function () {
           var correctVid = catalog[SET_KEYS[Math.min(totalBelts, 4)]];
           var items = [];
-          if (correctVid) items.push({ id: correctVid, quantity: 1, properties: mergedProps });
+          if (correctVid) items.push({ id: Number(correctVid), quantity: 1, properties: mergedProps });
           if (totalBelts > 4 && extraVid) {
             items.push({ id: extraVid, quantity: totalBelts - 4, properties: { _bundle_extra: '1', _bundle_id: mergedProps._bundle_id || '' } });
           }
