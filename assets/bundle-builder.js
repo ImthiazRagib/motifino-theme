@@ -1669,18 +1669,18 @@
     });
     const currentBeltCount = allBelts.length;
 
-    /* Fetch live cart — count existing belt items to determine total */
+    /* Fetch live cart — count existing belt slots by scanning Cintura N - Pelle
+       property occurrences, matching how the cart display counts rows. */
     let existingBelts = 0;
     try {
       const cartData = await fetch('/cart.js').then(function (r) { return r.json(); });
       (cartData.items || []).forEach(function (item) {
         const props = item.properties || {};
-        let max = 0;
+        let slots = 0;
         Object.keys(props).forEach(function (k) {
-          const m = k.match(/^Cintura (\d+) - (Pelle|Lunghezza)$/);
-          if (m && props[k]) { const n = parseInt(m[1], 10); if (n > max) max = n; }
+          if (/^Cintura \d+ - Pelle$/.test(k) && props[k]) slots++;
         });
-        if (max > 0) existingBelts += max * item.quantity;
+        if (slots > 0) existingBelts += slots * item.quantity;
       });
     } catch (e) {
       console.warn('[BundleBuilder] Could not fetch cart for belt count:', e);
@@ -1714,10 +1714,11 @@
       items.push({ id: extraVariantId, quantity: totalBelts - 4, properties: { _bundle_extra: '1', _bundle_id: bundleId } });
     }
 
-    /* Add NFC-CARD — quantity matches total belt count */
+    /* Add NFC-CARD — one card per belt in this session only;
+       existing bundles already carry their own NFC items in the cart. */
     const nfcVariantId = _bbCatalog && Number(_bbCatalog['NFC-CARD']);
     if (nfcVariantId > 0) {
-      items.push({ id: nfcVariantId, quantity: totalBelts, properties: { _bundle_nfc: '1', _bundle_id: bundleId } });
+      items.push({ id: nfcVariantId, quantity: currentBeltCount, properties: { _bundle_nfc: '1', _bundle_id: bundleId } });
     }
 
     /* Gift box line items intentionally disabled — orders no longer carry any
