@@ -1658,9 +1658,9 @@
 
   /* ── Shopify cart submission ─────────────────────────────── */
   async function proceedToCheckout() {
-    /* MOTIFINO variant IDs — hardcoded, no catalog lookup needed */
-    const MOTIFINO = { 1: 56856499913030, 2: 56856501223750, 3: 56856511021382 };
-    const MOTIFINO_EXTRA = 56856511971654;
+    /* SET-CINTURA variant IDs — resolved from catalog JSON */
+    const SET_KEYS = { 1: 'SET-CINTURA-SINGOLA', 2: 'SET-CINTURE-DOPPIO', 3: 'SET-CINTURE-TRIPLO', 4: 'SET-CINTURE-INFINITY' };
+    const SET_EXTRA_KEY = 'SET-CINTURE-EXTRA';
 
     /* Flatten all belts across all pending + current bundles */
     const allBelts = [];
@@ -1669,7 +1669,7 @@
     });
 
     const totalBelts = allBelts.length;
-    const variantId = MOTIFINO[Math.min(totalBelts, 3)];
+    const variantId = _bbCatalog && Number(_bbCatalog[SET_KEYS[Math.min(totalBelts, 4)]]);
 
     /* Unique ID links the main bundle item to its hidden components so cart
        removal of the bundle also clears straps, buckles, NFC, and extras. */
@@ -1690,9 +1690,10 @@
 
     const items = [{ id: variantId, quantity: 1, properties }];
 
-    /* Extra belts beyond 3 */
-    if (totalBelts > 3) {
-      items.push({ id: MOTIFINO_EXTRA, quantity: totalBelts - 3, properties: { _bundle_extra: '1', _bundle_id: bundleId } });
+    /* Extra belts beyond 4 */
+    const extraVariantId = _bbCatalog && Number(_bbCatalog[SET_EXTRA_KEY]);
+    if (totalBelts > 4 && extraVariantId > 0) {
+      items.push({ id: extraVariantId, quantity: totalBelts - 4, properties: { _bundle_extra: '1', _bundle_id: bundleId } });
     }
 
     /* Add NFC-CARD — quantity matches total belt count */
@@ -1734,7 +1735,7 @@
     const validItems = items.filter(function (item) {
       return Number.isInteger(item.id) && item.id > 0;
     });
-    console.log('[BundleBuilder] totalBelts =', totalBelts, '| variantId =', variantId);
+    console.log('[BundleBuilder] totalBelts =', totalBelts, '| setCinturaKey =', SET_KEYS[Math.min(totalBelts, 4)], '| variantId =', variantId);
     console.log('[BundleBuilder] Cart payload →', JSON.stringify(validItems, null, 2));
 
     if (!validItems.length) {
