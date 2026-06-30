@@ -776,7 +776,7 @@
           var isExtra = extraVid && item.variant_id === extraVid;
           var isCard  = p._bundle_nfc === '1' || p._bundle_privileged === '1';
 
-          if (isMain || isExtra || isCard) updates[item.variant_id] = 0;
+          if (isMain || isExtra || isCard) updates[item.key] = 0;
 
           if (isMain) {
             var maxSlot = 0;
@@ -812,7 +812,7 @@
         if (hasVids) {
           (cart.items || []).forEach(function (item) {
             if (item.properties && item.properties._bundle_component === '1') {
-              updates[item.variant_id] = 0;
+              updates[item.key] = 0;
             }
           });
           var compQtys = {};
