@@ -1802,14 +1802,15 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 }
 
 .order-summary__body td {
-  border-block-start-width: 0;
-  border-top: none;
-  border-bottom: 1px solid;
-  border-image: linear-gradient(228deg, rgba(191, 149, 63, 1) 14%, rgba(252, 246, 186, 1) 50%, rgba(179, 135, 40, 1) 84.512%) 1;
+  border-block-width: 0;
+  border: none !important;
+  background-image: linear-gradient(228deg, rgba(191, 149, 63, 1) 14%, rgba(252, 246, 186, 1) 50%, rgba(179, 135, 40, 1) 84.512%);
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  background-position: left bottom;
 }
 .order-summary__body tr:last-child td {
-  border-bottom: none;
-  border-image: none;
+  background-image: none;
 }
 .order-summary__header th {
   border-block-start-width: 0;
