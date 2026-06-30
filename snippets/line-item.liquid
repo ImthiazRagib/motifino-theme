@@ -144,11 +144,11 @@
                 <li><span class="bb-cart-prop__key">Fibbia:</span> {{ _fibbia_val }}</li>
               {%- endif -%}
             </ul>
-            {%- if _li_is_belt -%}
+            {%- if belt_price_cents > 0 -%}
               <div class="bb-li-price--mobile">
-                <span>€ {{ _li_belt_price_display }}</span>
-                {%- if _li_belt_pos > 0 -%}
-                  <span class="bb-li-original-price">{{ line_item.original_price | money }}</span>
+                {{- belt_price_cents | money -}}
+                {%- if belt_price_pos > 0 -%}
+                  <span class="bb-li-original-price">{{- 4999 | money -}}</span>
                 {%- endif -%}
               </div>
             {%- endif -%}
