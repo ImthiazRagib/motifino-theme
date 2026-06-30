@@ -1577,6 +1577,13 @@ shopify-accelerated-checkout, shopify-accelerated-checkout-cart {
   --section-stack-gap: var(--section-stack-gap-tight);
 }
 
+.shopify-section--main-cart .section-spacing {
+  padding-block-start: 1rem;
+}
+.shopify-section--main-cart .section-stack {
+  gap: 0.7rem;
+}
+
 .shopify-section:empty {
   display: none;
 }

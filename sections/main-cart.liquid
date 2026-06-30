@@ -49,16 +49,6 @@
   {%- else -%}
     <div class="container container--sm">
       <div class="section-stack">
-        <div class="section-header justify-self-center text-center">
-          <div class="v-stack gap-1">
-            <h1 class="h2">{{ 'cart.general.title' | t }}</h1>
-
-            {%- if settings.cart_show_free_shipping_bar -%}
-              {%- render 'free-shipping-bar' -%}
-            {%- endif -%}
-          </div>
-        </div>
-
         {%- assign _cart_belt_count = 0 -%}
         {%- for _ci in cart.items -%}
           {%- for _p in _ci.properties -%}
@@ -95,6 +85,16 @@
             <span class="bb-cart-upsell__action">+ Aggiungi</span>
           </div>
         </a>
+
+        <div class="section-header justify-self-center text-center">
+          <div class="v-stack gap-1">
+            <h1 class="h2">{{ 'cart.general.title' | t }}</h1>
+
+            {%- if settings.cart_show_free_shipping_bar -%}
+              {%- render 'free-shipping-bar' -%}
+            {%- endif -%}
+          </div>
+        </div>
 
         <form action="{{ routes.cart_url }}" method="POST" class="cart-page">
           <input type="hidden" name="attributes[products_mobile_grid_mode]" value="">
