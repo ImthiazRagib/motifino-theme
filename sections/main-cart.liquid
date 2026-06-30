@@ -762,44 +762,46 @@
           Object.values(SET_KEYS).map(function (k) { return catalog[k] ? Number(catalog[k]) : null; }).filter(Boolean)
         );
         var extraVid = catalog[SET_EXTRA_KEY] ? Number(catalog[SET_EXTRA_KEY]) : 0;
+        var nfcVid   = catalog['NFC-CARD']    ? Number(catalog['NFC-CARD'])    : 0;
 
-        var totalBelts = 0;
+        var totalBelts  = 0;
         var mergedProps = {};
-        var beltN = 0;
-        var updates = {};
+        var beltN       = 0;
+        var updates     = {};
 
+        /* Scan cart — merge belt properties and mark stale items for removal */
         (cart.items || []).forEach(function (item) {
+          var p       = item.properties || {};
           var isMain  = allSetVids.has(item.variant_id);
           var isExtra = extraVid && item.variant_id === extraVid;
-          if (isMain || isExtra) updates[item.variant_id] = 0;
+          var isCard  = p._bundle_nfc === '1' || p._bundle_privileged === '1';
+
+          if (isMain || isExtra || isCard) updates[item.variant_id] = 0;
+
           if (isMain) {
-            var props = item.properties || {};
             var maxSlot = 0;
-            Object.keys(props).forEach(function (k) {
+            Object.keys(p).forEach(function (k) {
               var m = k.match(/^Cintura (\d+) - Pelle$/);
-              if (m && props[k]) maxSlot = Math.max(maxSlot, parseInt(m[1], 10));
+              if (m && p[k]) maxSlot = Math.max(maxSlot, parseInt(m[1], 10));
             });
             for (var i = 1; i <= maxSlot; i++) {
-              beltN++;
-              totalBelts++;
+              beltN++; totalBelts++;
               ['Pelle', 'Lunghezza', 'Fibbia'].forEach(function (attr) {
-                var v = props['Cintura ' + i + ' - ' + attr];
+                var v = p['Cintura ' + i + ' - ' + attr];
                 if (v) mergedProps['Cintura ' + beltN + ' - ' + attr] = v;
               });
-              var img = props['_cintura_' + i + '_img'];
+              var img = p['_cintura_' + i + '_img'];
               if (img) mergedProps['_cintura_' + beltN + '_img'] = img;
-              var sv = props['_cintura_' + i + '_strap_vid'];
+              var sv = p['_cintura_' + i + '_strap_vid'];
               if (sv) mergedProps['_cintura_' + beltN + '_strap_vid'] = sv;
-              var bv = props['_cintura_' + i + '_buckle_vid'];
+              var bv = p['_cintura_' + i + '_buckle_vid'];
               if (bv) mergedProps['_cintura_' + beltN + '_buckle_vid'] = bv;
             }
-            if (!mergedProps._bundle_id && props._bundle_id) mergedProps._bundle_id = props._bundle_id;
+            if (!mergedProps._bundle_id && p._bundle_id) mergedProps._bundle_id = p._bundle_id;
           }
         });
 
-        /* Reconcile component items (strap + buckle) if VID data is available.
-           Zero out all existing component items then re-add correct quantities
-           derived from the merged belt VIDs — eliminates orphaned items. */
+        /* Component reconciliation (strap + buckle inventory) */
         var correctComponentItems = [];
         var hasVids = false;
         for (var ci = 1; ci <= totalBelts; ci++) {
@@ -830,19 +832,34 @@
           return;
         }
 
+        /* Step 1 — zero out stale items */
         fetch('/cart/update.js', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ updates: updates })
         }).then(function () {
-          var correctVid = catalog[SET_KEYS[Math.min(totalBelts, 4)]];
           var items = [];
+
+          /* Correct SET variant: 1→SINGOLA  2→DOPPIO  3→TRIPLO  4+→INFINITY */
+          var correctVid = catalog[SET_KEYS[Math.min(totalBelts, 4)]];
           if (correctVid) items.push({ id: Number(correctVid), quantity: 1, properties: mergedProps });
+
+          /* Extra slots beyond 4 */
           if (totalBelts > 4 && extraVid) {
             items.push({ id: extraVid, quantity: totalBelts - 4, properties: { _bundle_extra: '1', _bundle_id: mergedProps._bundle_id || '' } });
           }
+
+          /* Privilege/NFC card — exactly 1 per belt */
+          if (nfcVid > 0) {
+            items.push({ id: nfcVid, quantity: totalBelts, properties: { _bundle_nfc: '1', _bundle_id: mergedProps._bundle_id || '' } });
+          }
+
+          /* Strap + buckle components for inventory tracking */
           correctComponentItems.forEach(function (c) { items.push(c); });
+
           if (!items.length) { window.location.href = '/checkout'; return; }
+
+          /* Step 2 — add correct items then redirect */
           return fetch('/cart/add.js', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

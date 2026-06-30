@@ -1673,10 +1673,7 @@
     /* Session-based tier — the cart checkout button will recalculate the
        correct tier across all sessions before redirecting to Shopify checkout. */
     const variantId = _bbCatalog && Number(_bbCatalog[SET_KEYS[Math.min(currentBeltCount, 4)]]);
-    const extraVariantId = _bbCatalog && Number(_bbCatalog[SET_EXTRA_KEY]);
 
-    /* Unique ID links the main bundle item to its hidden components so cart
-       removal of the bundle also clears straps, buckles, NFC, and extras. */
     const bundleId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
     const BUCKLE_CATALOG_MAP = {
@@ -1686,7 +1683,8 @@
       'buckle-4': 'FIBBIA-LUXURY',
     };
 
-    /* One property per belt — mirrors the review screen composition display */
+    /* Build belt properties — VIDs stored so checkout button can reconcile
+       strap/buckle inventory without an extra catalog fetch. */
     const properties = { _bundle_id: bundleId };
     allBelts.forEach(function (belt, i) {
       const strapInfo = STRAPS[belt.strap] || {};
@@ -1711,41 +1709,9 @@
       }
     });
 
+    /* Only add the main belt item — NFC, EXTRA, and component inventory items
+       are all handled by the checkout button when the customer proceeds. */
     const items = [{ id: variantId, quantity: 1, properties }];
-
-    /* Extra belts beyond 4 in this session */
-    if (currentBeltCount > 4 && extraVariantId > 0) {
-      items.push({ id: extraVariantId, quantity: currentBeltCount - 4, properties: { _bundle_extra: '1', _bundle_id: bundleId } });
-    }
-
-    /* Add NFC-CARD — one card per belt in this session only;
-       existing bundles already carry their own NFC items in the cart. */
-    const nfcVariantId = _bbCatalog && Number(_bbCatalog['NFC-CARD']);
-    if (nfcVariantId > 0) {
-      items.push({ id: nfcVariantId, quantity: currentBeltCount, properties: { _bundle_nfc: '1', _bundle_id: bundleId } });
-    }
-
-    /* Gift box line items intentionally disabled — orders no longer carry any
-       GIFT-BOX-* variant. Re-enable by restoring the BUCKLE_BOX_MAP + giftBoxQty
-       block (see git history for the previous implementation). */
-
-    /* Add strap + buckle variants as hidden line items for inventory tracking.
-       These must be priced at €0 in Shopify Admin so they do not affect the cart total. */
-    const componentQty = {};
-    allBelts.forEach(function (belt) {
-      const strapName = belt.strap ? belt.strap.replace('strap-', '').toUpperCase() : null;
-      const strapLen = belt.length ? belt.length.replace('cm', '') : '130';
-      const strapCatalogKey = strapName ? ('STRAP-' + strapName + '-' + strapLen) : null;
-      const buckleCatalogKey = belt.buckle ? BUCKLE_CATALOG_MAP[belt.buckle] : null;
-      [strapCatalogKey, buckleCatalogKey].forEach(function (catalogKey) {
-        if (!catalogKey) return;
-        const vid = _bbCatalog && Number(_bbCatalog[catalogKey]);
-        if (vid > 0) componentQty[vid] = (componentQty[vid] || 0) + 1;
-      });
-    });
-    Object.keys(componentQty).forEach(function (vid) {
-      items.push({ id: Number(vid), quantity: componentQty[vid], properties: { _bundle_component: '1', _bundle_id: bundleId } });
-    });
 
     /* Remove items with unconfigured or invalid variant IDs.
        Shopify rejects the entire batch with 422 if even one ID is 0 or NaN. */
