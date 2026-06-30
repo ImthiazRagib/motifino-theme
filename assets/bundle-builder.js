@@ -1679,6 +1679,13 @@
        removal of the bundle also clears straps, buckles, NFC, and extras. */
     const bundleId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
+    const BUCKLE_CATALOG_MAP = {
+      'buckle-1': 'FIBBIA-CLASSIC',
+      'buckle-2': 'FIBBIA-SILVER',
+      'buckle-3': 'FIBBIA-GOLD',
+      'buckle-4': 'FIBBIA-LUXURY',
+    };
+
     /* One property per belt — mirrors the review screen composition display */
     const properties = { _bundle_id: bundleId };
     allBelts.forEach(function (belt, i) {
@@ -1690,6 +1697,18 @@
       properties['Cintura ' + n + ' - Fibbia'] = buckleInfo.name || belt.buckle || '';
       const _comboImg = resolveBeltImage(belt);
       if (_comboImg) properties['_cintura_' + n + '_img'] = _comboImg;
+      const strapName = belt.strap ? belt.strap.replace('strap-', '').toUpperCase() : null;
+      const strapLen = belt.length ? belt.length.replace('cm', '') : '130';
+      const strapCatalogKey = strapName ? ('STRAP-' + strapName + '-' + strapLen) : null;
+      const buckleCatalogKey = belt.buckle ? BUCKLE_CATALOG_MAP[belt.buckle] : null;
+      if (strapCatalogKey) {
+        const sv = _bbCatalog && Number(_bbCatalog[strapCatalogKey]);
+        if (sv > 0) properties['_cintura_' + n + '_strap_vid'] = String(sv);
+      }
+      if (buckleCatalogKey) {
+        const bv = _bbCatalog && Number(_bbCatalog[buckleCatalogKey]);
+        if (bv > 0) properties['_cintura_' + n + '_buckle_vid'] = String(bv);
+      }
     });
 
     const items = [{ id: variantId, quantity: 1, properties }];
@@ -1712,12 +1731,6 @@
 
     /* Add strap + buckle variants as hidden line items for inventory tracking.
        These must be priced at €0 in Shopify Admin so they do not affect the cart total. */
-    const BUCKLE_CATALOG_MAP = {
-      'buckle-1': 'FIBBIA-CLASSIC',
-      'buckle-2': 'FIBBIA-SILVER',
-      'buckle-3': 'FIBBIA-GOLD',
-      'buckle-4': 'FIBBIA-LUXURY',
-    };
     const componentQty = {};
     allBelts.forEach(function (belt) {
       const strapName = belt.strap ? belt.strap.replace('strap-', '').toUpperCase() : null;

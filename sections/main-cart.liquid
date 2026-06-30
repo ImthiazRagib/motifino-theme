@@ -628,25 +628,53 @@
             newProps['Cintura ' + newN + ' - Fibbia']    = oldProps['Cintura ' + i + ' - Fibbia'] || '';
             var img = oldProps['_cintura_' + i + '_img'];
             if (img) newProps['_cintura_' + newN + '_img'] = img;
+            var sv = oldProps['_cintura_' + i + '_strap_vid'];
+            if (sv) newProps['_cintura_' + newN + '_strap_vid'] = sv;
+            var bv = oldProps['_cintura_' + i + '_buckle_vid'];
+            if (bv) newProps['_cintura_' + newN + '_buckle_vid'] = bv;
             newN++;
           }
+
+          /* Compute exact target quantities for component items from remaining belts.
+             Using set-to-exact instead of decrement-by-1 eliminates race conditions
+             when strap and buckle requests fire simultaneously against stale cart state. */
+          var targetCompQtys = {};
+          for (var ri = 1; ri <= newBeltCount; ri++) {
+            var rsv = newProps['_cintura_' + ri + '_strap_vid'];
+            var rbv = newProps['_cintura_' + ri + '_buckle_vid'];
+            if (rsv) targetCompQtys[rsv] = (targetCompQtys[rsv] || 0) + 1;
+            if (rbv) targetCompQtys[rbv] = (targetCompQtys[rbv] || 0) + 1;
+          }
+          var hasVids = Object.keys(targetCompQtys).length > 0 || newBeltCount === 0;
 
           var nfcItem = cart.items.find(function (i) {
             return i.properties && i.properties._bundle_id === bundleId && i.properties._bundle_nfc === '1';
           });
 
-          /* Decrement NFC first, then update main item properties in place.
-             In-place update via change.js keeps the item at its original cart
-             position — avoids re-ordering when remove+re-add would append to end. */
-          var nfcStep = nfcItem
-            ? fetch('/cart/change.js', {
+          var steps = [];
+
+          if (nfcItem) {
+            steps.push(fetch('/cart/change.js', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: nfcItem.key, quantity: Math.max(0, nfcItem.quantity - 1) })
+            }));
+          }
+
+          if (hasVids) {
+            cart.items.forEach(function (item) {
+              if (!item.properties || item.properties._bundle_component !== '1') return;
+              if (item.properties._bundle_id !== bundleId) return;
+              var target = targetCompQtys[String(item.variant_id)] || 0;
+              steps.push(fetch('/cart/change.js', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: nfcItem.key, quantity: Math.max(0, nfcItem.quantity - 1) })
-              })
-            : Promise.resolve();
+                body: JSON.stringify({ id: item.key, quantity: target })
+              }));
+            });
+          }
 
-          return nfcStep.then(function () {
+          return Promise.all(steps).then(function () {
             if (newBeltCount === 0) {
               return fetch('/cart/change.js', {
                 method: 'POST',
@@ -760,10 +788,42 @@
               });
               var img = props['_cintura_' + i + '_img'];
               if (img) mergedProps['_cintura_' + beltN + '_img'] = img;
+              var sv = props['_cintura_' + i + '_strap_vid'];
+              if (sv) mergedProps['_cintura_' + beltN + '_strap_vid'] = sv;
+              var bv = props['_cintura_' + i + '_buckle_vid'];
+              if (bv) mergedProps['_cintura_' + beltN + '_buckle_vid'] = bv;
             }
             if (!mergedProps._bundle_id && props._bundle_id) mergedProps._bundle_id = props._bundle_id;
           }
         });
+
+        /* Reconcile component items (strap + buckle) if VID data is available.
+           Zero out all existing component items then re-add correct quantities
+           derived from the merged belt VIDs — eliminates orphaned items. */
+        var correctComponentItems = [];
+        var hasVids = false;
+        for (var ci = 1; ci <= totalBelts; ci++) {
+          if (mergedProps['_cintura_' + ci + '_strap_vid'] || mergedProps['_cintura_' + ci + '_buckle_vid']) {
+            hasVids = true; break;
+          }
+        }
+        if (hasVids) {
+          (cart.items || []).forEach(function (item) {
+            if (item.properties && item.properties._bundle_component === '1') {
+              updates[item.variant_id] = 0;
+            }
+          });
+          var compQtys = {};
+          for (var ci = 1; ci <= totalBelts; ci++) {
+            var csv = mergedProps['_cintura_' + ci + '_strap_vid'];
+            var cbv = mergedProps['_cintura_' + ci + '_buckle_vid'];
+            if (csv) compQtys[csv] = (compQtys[csv] || 0) + 1;
+            if (cbv) compQtys[cbv] = (compQtys[cbv] || 0) + 1;
+          }
+          Object.keys(compQtys).forEach(function (vid) {
+            correctComponentItems.push({ id: Number(vid), quantity: compQtys[vid], properties: { _bundle_component: '1', _bundle_id: mergedProps._bundle_id || '' } });
+          });
+        }
 
         if (!Object.keys(updates).length || !totalBelts) {
           window.location.href = '/checkout';
@@ -781,6 +841,7 @@
           if (totalBelts > 4 && extraVid) {
             items.push({ id: extraVid, quantity: totalBelts - 4, properties: { _bundle_extra: '1', _bundle_id: mergedProps._bundle_id || '' } });
           }
+          correctComponentItems.forEach(function (c) { items.push(c); });
           if (!items.length) { window.location.href = '/checkout'; return; }
           return fetch('/cart/add.js', {
             method: 'POST',
