@@ -408,24 +408,20 @@
 
                 {%- if _cart_belt_count > 0 -%}
                   {%- assign _bb_importo = _bb_belt_full | plus: _nfc_total_value -%}
-                  {%- if _bb_savings > 0 or _nfc_total_value > 0 -%}
+                  {%- assign _bb_offerta_total = _bb_savings | plus: _nfc_total_value -%}
+                  {%- if _bb_offerta_total > 0 -%}
                     <div class="bb-recap-row">
                       <span>Importo:</span>
                       <span>{{ _bb_importo | money }}</span>
                     </div>
-                    {%- if _nfc_total_value > 0 -%}
-                      <div class="bb-recap-row bb-recap-row--discount" style="border-bottom:none;padding-bottom:0;">
-                        <span>Privilege Card:</span>
-                        <span>-{{ _nfc_total_value | money }}</span>
-                      </div>
-                    {%- endif -%}
-                    {%- if _bb_savings > 0 -%}
-                      {%- assign _bb_pct = _bb_savings | times: 100.0 | divided_by: _bb_belt_full | round: 1 -%}
-                      <div class="bb-recap-row bb-recap-row--discount">
-                        <span>Offerta Set:</span>
-                        <span>-{{ _bb_savings | money }} (-{{ _bb_pct | replace: '.', ',' }}%)</span>
-                      </div>
-                    {%- endif -%}
+                    <div class="bb-recap-row bb-recap-row--discount" style="border-bottom:none;padding-bottom:0;">
+                      <span>Offerta Set:</span>
+                      <span>-{{ _bb_offerta_total | money }}</span>
+                    </div>
+                    <div class="bb-recap-row" style="padding-bottom:10px;border-bottom:1px solid rgb(var(--border-color));">
+                      <span>Spedizione:</span>
+                      <span>GRATIS</span>
+                    </div>
                   {%- endif -%}
                   {%- if _bb_single_total > 0 -%}
                     <div class="bb-recap-row">
