@@ -1803,6 +1803,13 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 
 .order-summary__body td {
   border-block-start-width: 0;
+  border-top: none;
+  border-bottom: 1px solid;
+  border-image: linear-gradient(228deg, rgba(191, 149, 63, 1) 14%, rgba(252, 246, 186, 1) 50%, rgba(179, 135, 40, 1) 84.512%) 1;
+}
+.order-summary__body tr:last-child td {
+  border-bottom: none;
+  border-image: none;
 }
 .order-summary__header th {
   border-block-start-width: 0;
@@ -1898,7 +1905,50 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   flex-shrink: 0;
   background: #fff;
 }
-.bb-cart-upsell__info { flex: 1; min-width: 0; }
+.bb-cart-upsell__right {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 2px 12px;
+  min-width: 0;
+}
+.bb-cart-upsell__title {
+  grid-column: 1;
+  grid-row: 1;
+}
+.bb-cart-upsell__prices {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  grid-column: 1;
+  grid-row: 2;
+}
+.bb-cart-upsell__action {
+  grid-column: 2;
+  grid-row: 1 / 3;
+}
+@media (max-width: 699px) {
+  .bb-cart-upsell__card {
+    gap: 8px;
+    padding: 8px 10px;
+  }
+  .bb-cart-upsell__title {
+    grid-column: 1 / 3;
+    grid-row: 1;
+  }
+  .bb-cart-upsell__prices {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .bb-cart-upsell__action {
+    grid-column: 2;
+    grid-row: 2;
+    padding: 6px 8px !important;
+    font-size: 10px !important;
+  }
+}
 .bb-cart-upsell__title {
   display: block;
   font-size: 15px;
@@ -1913,12 +1963,11 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 }
 .bb-cart-upsell__new-price {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 400;
   color: #fff;
 }
 .bb-cart-upsell__old-price {
   font-size: 13px;
-  font-weight: 600;
   color: #fff;
   text-decoration: line-through;
   background: #c0392b;
@@ -1974,7 +2023,7 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 .bb-li-original-price {
   text-decoration: line-through;
   color: #c0392b;
-  font-size: 0.85em;
+  font-size: 1em;
 }
 
 .bb-cart-props {

@@ -84,7 +84,7 @@
             class="bb-cart-upsell__img"
             loading="lazy"
           >
-          <div class="bb-cart-upsell__info">
+          <div class="bb-cart-upsell__right">
             <strong class="bb-cart-upsell__title">Aggiungi una {{ _next_belt_num }}° cintura</strong>
             <div class="bb-cart-upsell__prices">
               <span class="bb-cart-upsell__new-price">€{{ _next_belt_price }}</span>
@@ -92,8 +92,8 @@
                 <span class="bb-cart-upsell__old-price">€49,99</span>
               {%- endif -%}
             </div>
+            <span class="bb-cart-upsell__action">+ Aggiungi</span>
           </div>
-          <span class="bb-cart-upsell__action">+ Aggiungi</span>
         </a>
 
         <form action="{{ routes.cart_url }}" method="POST" class="cart-page">
@@ -417,7 +417,7 @@
                     {%- assign _bb_offerta_pct = _bb_offerta_total | times: 100.0 | divided_by: _bb_importo | round: 1 -%}
                     <div class="bb-recap-row bb-recap-row--discount" style="border-bottom:none;padding-bottom:0;">
                       <span>Offerta Set:</span>
-                      <span><span style="font-size:12px;opacity:0.8;margin-right:4px;">(-{{ _bb_offerta_pct | replace: '.', ',' }}%)</span>-{{ _bb_offerta_total | money }}</span>
+                      <span><span style="opacity:0.8;margin-right:4px;">(-{{ _bb_offerta_pct | replace: '.', ',' }}%)</span>-{{ _bb_offerta_total | money }}</span>
                     </div>
                     {%- assign _shipping_threshold_cents = settings.cart_free_shipping_threshold | times: 100 -%}
                     {%- if cart.total_price >= _shipping_threshold_cents -%}
