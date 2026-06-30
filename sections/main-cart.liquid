@@ -418,10 +418,13 @@
                       <span>Offerta Set:</span>
                       <span>-{{ _bb_offerta_total | money }}</span>
                     </div>
-                    <div class="bb-recap-row" style="padding-bottom:10px;border-bottom:1px solid rgb(var(--border-color));">
-                      <span>Spedizione:</span>
-                      <span>GRATIS</span>
-                    </div>
+                    {%- assign _shipping_threshold_cents = settings.cart_free_shipping_threshold | times: 100 -%}
+                    {%- if cart.total_price >= _shipping_threshold_cents -%}
+                      <div class="bb-recap-row" style="padding-bottom:10px;border-bottom:1px solid rgb(var(--border-color));">
+                        <span>Spedizione:</span>
+                        <span>GRATIS</span>
+                      </div>
+                    {%- endif -%}
                   {%- endif -%}
                   {%- if _bb_single_total > 0 -%}
                     <div class="bb-recap-row">
