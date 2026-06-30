@@ -827,6 +827,16 @@
   padding-top: 13px;
 }
 
+@media screen and (max-width: 699px) {
+  .bb-combo-bar__actions {
+    padding-top: 0;
+    gap: 0;
+  }
+  .bb-combo-bar {
+    gap: 0;
+  }
+}
+
 /* Back button — circular icon button */
 .bb-combo-bar__back {
   flex: 0 0 auto;
@@ -1124,7 +1134,7 @@
 
   .bb-combo-bar__actions {
     border-top: none;
-    padding-top: 0;
+    padding-top: 0 !important;
     justify-content: flex-end;
   }
 
