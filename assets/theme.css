@@ -1881,53 +1881,58 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   width: 100%;
   margin-bottom: 16px;
   padding: 10px 12px;
-  border: 1.5px solid #d4d4d4;
-  border-radius: 10px;
-  background: #fff;
+  border: none;
+  border-radius: 12px;
+  background: #1a1a1a;
   text-decoration: none;
-  color: inherit;
+  color: #fff;
   box-sizing: border-box;
-  transition: border-color .15s;
+  transition: opacity .15s;
 }
-.bb-cart-upsell__card:hover { border-color: #999; }
+.bb-cart-upsell__card:hover { opacity: .9; }
 .bb-cart-upsell__img {
-  width: 56px;
-  height: 56px;
+  width: 60px;
+  height: 60px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 8px;
   flex-shrink: 0;
+  background: #fff;
 }
 .bb-cart-upsell__info { flex: 1; min-width: 0; }
 .bb-cart-upsell__title {
   display: block;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  color: #111;
+  color: #fff;
 }
 .bb-cart-upsell__prices {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 .bb-cart-upsell__new-price {
   font-size: 14px;
   font-weight: 700;
-  color: #c0392b;
+  color: #fff;
 }
 .bb-cart-upsell__old-price {
   font-size: 13px;
-  color: #999;
+  font-weight: 600;
+  color: #fff;
   text-decoration: line-through;
+  background: #c0392b;
+  padding: 1px 6px;
+  border-radius: 4px;
 }
 .bb-cart-upsell__action {
   flex-shrink: 0;
-  padding: 8px 14px;
-  background: #111;
-  color: #fff;
-  border-radius: 6px;
+  padding: 9px 16px;
+  background: linear-gradient(228deg, rgba(191, 149, 63, 1) 14%, rgba(252, 246, 186, 1) 50%, rgba(179, 135, 40, 1) 84.512%);
+  color: #1a1a1a;
+  border-radius: 8px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* ── Line item image wrap + X remove button ─────── */
@@ -1968,7 +1973,7 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 /* ── Strikethrough original price ───────────────── */
 .bb-li-original-price {
   text-decoration: line-through;
-  color: #999;
+  color: #c0392b;
   font-size: 0.85em;
 }
 

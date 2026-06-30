@@ -988,7 +988,7 @@
       return sum + ((b && b.belts) ? b.belts.length : 0);
     }, 0);
     var beltNum = pendingCount + state.currentBelt;
-    var title = beltNum + '° cintura aggiunta';
+    var title = 'Cintura Aggiunta';
 
     var fb = document.getElementById('bb-progress-feedback');
     if (!fb) { onComplete(); return; }
