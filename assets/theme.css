@@ -1899,8 +1899,8 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
 }
 .bb-cart-upsell__card:hover { opacity: .9; }
 .bb-cart-upsell__img {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   object-fit: cover;
   border-radius: 8px;
   flex-shrink: 0;
@@ -1912,7 +1912,7 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   grid-template-columns: 1fr auto;
   grid-template-rows: auto auto;
   align-items: center;
-  gap: 2px 12px;
+  /* gap: 2px 12px; */
   min-width: 0;
 }
 .bb-cart-upsell__title {
@@ -1946,7 +1946,7 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   .bb-cart-upsell__action {
     grid-column: 2;
     grid-row: 2;
-    padding: 6px 8px !important;
+    padding: 6px 13px !important;
     font-size: 10px !important;
   }
 }
