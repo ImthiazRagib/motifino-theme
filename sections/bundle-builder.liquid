@@ -270,9 +270,9 @@
     infinity:  {{ section.settings.img_infinity  | img_url: '240x240' | json | default: '""' }},
   };
   window.BB_CAROUSEL_CONFIG = {
-    buckleOrder:   {{ section.settings.buckle_order   | default: "buckle-2,buckle-1,buckle-3,buckle-4" | json }},
+    buckleOrder:   {{ section.settings.buckle_order   | default: "buckle-1,buckle-2,buckle-4,buckle-3" | json }},
     strapOrder:    {{ section.settings.strap_order    | default: "strap-nero,strap-marrone,strap-cognac,strap-cuoio,strap-beige,strap-rosso,strap-verde,strap-blu,strap-grigio" | json }},
-    defaultBuckle: {{ section.settings.default_buckle | default: "buckle-2" | json }},
+    defaultBuckle: {{ section.settings.default_buckle | default: "buckle-1" | json }},
     defaultStrap:  {{ section.settings.default_strap  | default: "strap-nero" | json }},
   };
 </script>
@@ -487,13 +487,13 @@
         { "value": "buckle-3", "label": "3 — Elegant Chrome Gold" },
         { "value": "buckle-4", "label": "4 — Mirror Chrome" }
       ],
-      "default": "buckle-2"
+      "default": "buckle-1"
     },
     {
       "type": "text",
       "id": "buckle_order",
       "label": "Ordine fibbie nel carousel",
-      "default": "buckle-2,buckle-1,buckle-3,buckle-4",
+      "default": "buckle-1,buckle-4,buckle-3,buckle-2",
       "info": "Chiavi separate da virgola. La prima è la posizione di default. Valori validi: buckle-1, buckle-2, buckle-3, buckle-4. Es: buckle-3,buckle-1,buckle-4,buckle-2"
     },
     {
