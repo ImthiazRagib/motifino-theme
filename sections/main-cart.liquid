@@ -184,8 +184,8 @@
               d.addEventListener('click', function () { stopLoop(); goTo(i); startLoop(); });
             });
 
-            track.addEventListener('mouseenter', stopLoop);
-            track.addEventListener('mouseleave', startLoop);
+            root.addEventListener('mouseenter', stopLoop);
+            root.addEventListener('mouseleave', startLoop);
 
             var sx = 0;
             track.addEventListener('touchstart', function (e) { stopLoop(); sx = e.touches[0].clientX; }, { passive: true });
