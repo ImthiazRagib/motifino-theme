@@ -102,21 +102,31 @@
         </a>
         {%- endif -%}
 
-        {%- comment -%} ── Inline upsell_bundle blocks — single banner or carousel ── {%- endcomment -%}
         {%- assign _upsell_count = 0 -%}
         {%- for block in section.blocks -%}
           {%- if block.type == 'upsell_bundle' and block.settings.enabled != false -%}
             {%- assign _upsell_count = _upsell_count | plus: 1 -%}
           {%- endif -%}
         {%- endfor -%}
-
         {%- if _upsell_count > 0 -%}
-          <div class="bb-upsell-carousel" id="bb-upsell-carousel-{{ section.id }}">
+          {%- assign _uc_speed = section.settings.upsell_carousel_speed | times: 1000 -%}
+          {%- assign _uc_pt = section.settings.upsell_carousel_pt | default: 0 -%}
+          {%- assign _uc_pb = section.settings.upsell_carousel_pb | default: 0 -%}
+          {%- assign _uc_pl = section.settings.upsell_carousel_pl | default: 0 -%}
+          {%- assign _uc_pr = section.settings.upsell_carousel_pr | default: 0 -%}
+          {%- assign _uc_mt = section.settings.upsell_carousel_mt | default: 0 -%}
+          {%- assign _uc_mb = section.settings.upsell_carousel_mb | default: 0 -%}
+          <div
+            class="bb-upsell-carousel"
+            id="bb-upsell-carousel-{{ section.id }}-uc"
+            data-speed="{{ _uc_speed }}"
+            style="padding:{{ _uc_pt }}px {{ _uc_pr }}px {{ _uc_pb }}px {{ _uc_pl }}px;margin-top:{{ _uc_mt }}px;margin-bottom:{{ _uc_mb }}px;"
+          >
             <div class="bb-upsell-carousel__track-wrap">
-              <div class="bb-upsell-carousel__track" id="bb-upsell-track-{{ section.id }}">
+              <div class="bb-upsell-carousel__track" id="bb-upsell-track-{{ section.id }}-uc">
                 {%- for block in section.blocks -%}
                   {%- if block.type == 'upsell_bundle' and block.settings.enabled != false -%}
-                    <div class="bb-upsell-carousel__slide">
+                    <div class="bb-upsell-carousel__slide" {{ block.shopify_attributes }}>
                       {%- render 'bb-cart-upsell-block', block: block -%}
                     </div>
                   {%- endif -%}
@@ -125,22 +135,33 @@
             </div>
             {%- if _upsell_count > 1 -%}
             <div class="bb-upsell-carousel__footer">
-              <div class="bb-upsell-carousel__dots" id="bb-upsell-dots-{{ section.id }}">
+              {%- if section.settings.upsell_carousel_arrows -%}
+                <button class="bb-upsell-carousel__btn" id="bb-upsell-prev-{{ section.id }}-uc" aria-label="Previous">&#8592;</button>
+              {%- endif -%}
+              <div class="bb-upsell-carousel__dots" id="bb-upsell-dots-{{ section.id }}-uc">
                 {%- for i in (1.._upsell_count) -%}
                   <span class="bb-upsell-carousel__dot{% if forloop.first %} is-active{% endif %}"></span>
                 {%- endfor -%}
               </div>
+              {%- if section.settings.upsell_carousel_arrows -%}
+                <button class="bb-upsell-carousel__btn" id="bb-upsell-next-{{ section.id }}-uc" aria-label="Next">&#8594;</button>
+              {%- endif -%}
             </div>
             {%- endif -%}
           </div>
           <script>
           (function () {
-            var track  = document.getElementById('bb-upsell-track-{{ section.id }}');
-            var dotsEl = document.getElementById('bb-upsell-dots-{{ section.id }}');
+            var root    = document.getElementById('bb-upsell-carousel-{{ section.id }}-uc');
+            var track   = document.getElementById('bb-upsell-track-{{ section.id }}-uc');
+            var dotsEl  = document.getElementById('bb-upsell-dots-{{ section.id }}-uc');
+            var prevBtn = document.getElementById('bb-upsell-prev-{{ section.id }}-uc');
+            var nextBtn = document.getElementById('bb-upsell-next-{{ section.id }}-uc');
             if (!track) return;
+
             var dots    = dotsEl ? dotsEl.querySelectorAll('.bb-upsell-carousel__dot') : [];
             var total   = track.querySelectorAll('.bb-upsell-carousel__slide').length;
             var current = 0;
+            var speed   = Number(root.dataset.speed) || 4000;
             var timer   = null;
 
             function goTo(idx) {
@@ -149,30 +170,31 @@
               dots.forEach(function (d, i) { d.classList.toggle('is-active', i === current); });
             }
 
+            function stopLoop()  { clearInterval(timer); timer = null; }
             function startLoop() {
+              stopLoop();
               if (total < 2) return;
-              timer = setInterval(function () { goTo(current + 1); }, 4000);
+              timer = setInterval(function () { goTo(current + 1); }, speed);
             }
 
-            /* Pause on hover / touch, resume on leave */
-            track.addEventListener('mouseenter', function () { clearInterval(timer); });
-            track.addEventListener('mouseleave',  startLoop);
+            if (prevBtn) prevBtn.addEventListener('click', function () { stopLoop(); goTo(current - 1); startLoop(); });
+            if (nextBtn) nextBtn.addEventListener('click', function () { stopLoop(); goTo(current + 1); startLoop(); });
+
+            dots.forEach(function (d, i) {
+              d.addEventListener('click', function () { stopLoop(); goTo(i); startLoop(); });
+            });
+
+            track.addEventListener('mouseenter', stopLoop);
+            track.addEventListener('mouseleave', startLoop);
 
             var sx = 0;
-            track.addEventListener('touchstart', function (e) {
-              clearInterval(timer);
-              sx = e.touches[0].clientX;
-            }, { passive: true });
-            track.addEventListener('touchend', function (e) {
+            track.addEventListener('touchstart', function (e) { stopLoop(); sx = e.touches[0].clientX; }, { passive: true });
+            track.addEventListener('touchend',   function (e) {
               var dx = e.changedTouches[0].clientX - sx;
               if (dx < -40) goTo(current + 1);
               else if (dx > 40) goTo(current - 1);
               startLoop();
             }, { passive: true });
-
-            dots.forEach(function (d, i) {
-              d.addEventListener('click', function () { goTo(i); });
-            });
 
             startLoop();
           })();
@@ -1179,6 +1201,62 @@
       "id": "upsell_button_label",
       "label": "Button label",
       "default": "+ Aggiungi"
+    },
+    {
+      "type": "header",
+      "content": "Upsell Carousel (blocks)"
+    },
+    {
+      "type": "range",
+      "id": "upsell_carousel_speed",
+      "label": "Autoplay speed (seconds)",
+      "min": 2,
+      "max": 15,
+      "step": 1,
+      "default": 4,
+      "unit": "s"
+    },
+    {
+      "type": "checkbox",
+      "id": "upsell_carousel_arrows",
+      "label": "Show prev / next arrows",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "upsell_carousel_mt",
+      "label": "Carousel margin top",
+      "min": 0, "max": 80, "step": 2, "unit": "px", "default": 0
+    },
+    {
+      "type": "range",
+      "id": "upsell_carousel_mb",
+      "label": "Carousel margin bottom",
+      "min": 0, "max": 80, "step": 2, "unit": "px", "default": 0
+    },
+    {
+      "type": "range",
+      "id": "upsell_carousel_pt",
+      "label": "Carousel padding top",
+      "min": 0, "max": 60, "step": 2, "unit": "px", "default": 0
+    },
+    {
+      "type": "range",
+      "id": "upsell_carousel_pb",
+      "label": "Carousel padding bottom",
+      "min": 0, "max": 60, "step": 2, "unit": "px", "default": 0
+    },
+    {
+      "type": "range",
+      "id": "upsell_carousel_pl",
+      "label": "Carousel padding left",
+      "min": 0, "max": 60, "step": 2, "unit": "px", "default": 0
+    },
+    {
+      "type": "range",
+      "id": "upsell_carousel_pr",
+      "label": "Carousel padding right",
+      "min": 0, "max": 60, "step": 2, "unit": "px", "default": 0
     }
   ],
 
@@ -1186,12 +1264,12 @@
     { "type": "@app" },
     {
       "type": "upsell_bundle",
-      "name": "Bundle Upsell Banner",
+      "name": "Belt Upsell Slide",
       "settings": [
         {
           "type": "checkbox",
           "id": "enabled",
-          "label": "Show banner",
+          "label": "Show this slide",
           "default": true
         },
         {
