@@ -86,7 +86,7 @@ Pull theme:
 shopify theme pull --store 099701-dd.myshopify.com --theme 192309952838
 
 Push theme:
-shopify theme push --store 099701-dd.myshopify.com --theme 192362152262
+shopify theme push --store 099701-dd.myshopify.com --theme 192534151494
 
 Push unpublished (safe preview):
 shopify theme push --store 099701-dd.myshopify.com --theme 192309952838 --unpublished

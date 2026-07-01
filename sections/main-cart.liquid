@@ -67,24 +67,47 @@
           {%- assign _next_belt_price = '29,99' -%}
         {%- endif -%}
         {%- assign _next_belt_num = _cart_belt_count | plus: 1 -%}
-        <a href="/pages/bundle?type=set-cintura-singola" class="bb-cart-upsell__card">
-          <img
-            src="https://cdn.shopify.com/s/files/1/0829/7909/4854/files/Foto_set_singolo_con_lati_grigi_7b7b67c2-c112-4007-a730-0202d47dfe5a.webp?v=1775591318"
-            alt="Cintura"
-            class="bb-cart-upsell__img"
-            loading="lazy"
-          >
+        {%- if section.settings.upsell_enabled != false -%}
+        {%- assign _upsell_url = section.settings.upsell_bundle_url | default: '/pages/bundle?type=set-cintura-singola' -%}
+        {%- assign _upsell_compare = section.settings.upsell_compare_price | default: '49,99' -%}
+        {%- assign _upsell_btn = section.settings.upsell_button_label | default: '+ Aggiungi' -%}
+        <a href="{{ _upsell_url }}" class="bb-cart-upsell__card">
+          {%- if section.settings.upsell_image != blank -%}
+            <img
+              src="{{ section.settings.upsell_image | image_url: width: 200 }}"
+              alt="{{ section.settings.upsell_image.alt | default: 'Cintura' }}"
+              class="bb-cart-upsell__img"
+              loading="lazy"
+              width="80"
+              height="80"
+            >
+          {%- else -%}
+            <img
+              src="https://cdn.shopify.com/s/files/1/0829/7909/4854/files/Foto_set_singolo_con_lati_grigi_7b7b67c2-c112-4007-a730-0202d47dfe5a.webp?v=1775591318"
+              alt="Cintura"
+              class="bb-cart-upsell__img"
+              loading="lazy"
+            >
+          {%- endif -%}
           <div class="bb-cart-upsell__right">
             <strong class="bb-cart-upsell__title">Aggiungi una {{ _next_belt_num }}° cintura</strong>
             <div class="bb-cart-upsell__prices">
               <span class="bb-cart-upsell__new-price">€{{ _next_belt_price }}</span>
               {%- if _cart_belt_count > 0 -%}
-                <span class="bb-cart-upsell__old-price">€49,99</span>
+                <span class="bb-cart-upsell__old-price">€{{ _upsell_compare }}</span>
               {%- endif -%}
             </div>
-            <span class="bb-cart-upsell__action">+ Aggiungi</span>
+            <span class="bb-cart-upsell__action">{{ _upsell_btn }}</span>
           </div>
         </a>
+        {%- endif -%}
+
+        {%- comment -%} ── Inline upsell_bundle blocks added via theme editor ── {%- endcomment -%}
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'upsell_bundle' and block.settings.enabled != false -%}
+            {%- render 'bb-cart-upsell-block', block: block -%}
+          {%- endif -%}
+        {%- endfor -%}
 
         <div class="section-header justify-self-center text-center">
           <div class="v-stack gap-1">
@@ -1052,9 +1075,122 @@
       "id": "show_shipping_estimator",
       "label": "t:sections.main_cart.show_shipping_estimator",
       "default": true
+    },
+    {
+      "type": "header",
+      "content": "Cart Upsell Banner"
+    },
+    {
+      "type": "checkbox",
+      "id": "upsell_enabled",
+      "label": "Show upsell banner",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "upsell_image",
+      "label": "Banner image"
+    },
+    {
+      "type": "url",
+      "id": "upsell_bundle_url",
+      "label": "Bundle page URL",
+      "info": "Link to the bundle builder page (e.g. /pages/bundle)"
+    },
+    {
+      "type": "text",
+      "id": "upsell_compare_price",
+      "label": "Compare-at price (crossed out)",
+      "default": "49,99",
+      "info": "Shown only when at least 1 belt is already in the cart"
+    },
+    {
+      "type": "text",
+      "id": "upsell_button_label",
+      "label": "Button label",
+      "default": "+ Aggiungi"
     }
   ],
 
-  "blocks": [{ "type": "@app" }]
+  "blocks": [
+    { "type": "@app" },
+    {
+      "type": "upsell_bundle",
+      "name": "Bundle Upsell Banner",
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "enabled",
+          "label": "Show banner",
+          "default": true
+        },
+        {
+          "type": "header",
+          "content": "Content"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Aggiungi una cintura"
+        },
+        {
+          "type": "text",
+          "id": "compare_price",
+          "label": "Compare-at price (crossed out)",
+          "default": "49,99"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label",
+          "default": "+ Aggiungi"
+        },
+        {
+          "type": "header",
+          "content": "Belt Combination"
+        },
+        {
+          "type": "select",
+          "id": "buckle_key",
+          "label": "Fibbia (Buckle)",
+          "options": [
+            { "value": "buckle-1", "label": "Classic Matt" },
+            { "value": "buckle-2", "label": "Elegant Chrome Silver" },
+            { "value": "buckle-3", "label": "Elegant Chrome Gold" },
+            { "value": "buckle-4", "label": "Mirror Chrome" }
+          ],
+          "default": "buckle-1"
+        },
+        {
+          "type": "select",
+          "id": "strap_key",
+          "label": "Pelle (Strap colour)",
+          "options": [
+            { "value": "strap-nero",    "label": "Black" },
+            { "value": "strap-marrone", "label": "Brown" },
+            { "value": "strap-cognac",  "label": "Cognac" },
+            { "value": "strap-cuoio",   "label": "White" },
+            { "value": "strap-beige",   "label": "Sand" },
+            { "value": "strap-rosso",   "label": "Brown Crocodile" },
+            { "value": "strap-verde",   "label": "Black Crocodile" },
+            { "value": "strap-blu",     "label": "Blue" },
+            { "value": "strap-grigio",  "label": "Gray" }
+          ],
+          "default": "strap-nero"
+        },
+        {
+          "type": "select",
+          "id": "belt_length",
+          "label": "Lunghezza (Length)",
+          "options": [
+            { "value": "130", "label": "130 cm" },
+            { "value": "150", "label": "150 cm" }
+          ],
+          "default": "130"
+        }
+      ]
+    }
+  ]
 }
 {% endschema %}
