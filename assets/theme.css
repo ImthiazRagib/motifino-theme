@@ -2058,6 +2058,10 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   margin: 0;
 }
 
+.bb-cart-props li{
+  padding-inline-start: 0 !important;
+}
+
 .bb-cart-prop__key {
   color: rgb(var(--text-color));
 }
