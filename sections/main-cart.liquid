@@ -102,12 +102,82 @@
         </a>
         {%- endif -%}
 
-        {%- comment -%} ── Inline upsell_bundle blocks added via theme editor ── {%- endcomment -%}
+        {%- comment -%} ── Inline upsell_bundle blocks — single banner or carousel ── {%- endcomment -%}
+        {%- assign _upsell_count = 0 -%}
         {%- for block in section.blocks -%}
           {%- if block.type == 'upsell_bundle' and block.settings.enabled != false -%}
-            {%- render 'bb-cart-upsell-block', block: block -%}
+            {%- assign _upsell_count = _upsell_count | plus: 1 -%}
           {%- endif -%}
         {%- endfor -%}
+
+        {%- if _upsell_count > 0 -%}
+          <div class="bb-upsell-carousel" id="bb-upsell-carousel-{{ section.id }}">
+            <div class="bb-upsell-carousel__track-wrap">
+              <div class="bb-upsell-carousel__track" id="bb-upsell-track-{{ section.id }}">
+                {%- for block in section.blocks -%}
+                  {%- if block.type == 'upsell_bundle' and block.settings.enabled != false -%}
+                    <div class="bb-upsell-carousel__slide">
+                      {%- render 'bb-cart-upsell-block', block: block -%}
+                    </div>
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+            </div>
+            {%- if _upsell_count > 1 -%}
+            <div class="bb-upsell-carousel__footer">
+              <div class="bb-upsell-carousel__dots" id="bb-upsell-dots-{{ section.id }}">
+                {%- for i in (1.._upsell_count) -%}
+                  <span class="bb-upsell-carousel__dot{% if forloop.first %} is-active{% endif %}"></span>
+                {%- endfor -%}
+              </div>
+            </div>
+            {%- endif -%}
+          </div>
+          <script>
+          (function () {
+            var track  = document.getElementById('bb-upsell-track-{{ section.id }}');
+            var dotsEl = document.getElementById('bb-upsell-dots-{{ section.id }}');
+            if (!track) return;
+            var dots    = dotsEl ? dotsEl.querySelectorAll('.bb-upsell-carousel__dot') : [];
+            var total   = track.querySelectorAll('.bb-upsell-carousel__slide').length;
+            var current = 0;
+            var timer   = null;
+
+            function goTo(idx) {
+              current = ((idx % total) + total) % total;
+              track.style.transform = 'translateX(-' + (current * 100) + '%)';
+              dots.forEach(function (d, i) { d.classList.toggle('is-active', i === current); });
+            }
+
+            function startLoop() {
+              if (total < 2) return;
+              timer = setInterval(function () { goTo(current + 1); }, 4000);
+            }
+
+            /* Pause on hover / touch, resume on leave */
+            track.addEventListener('mouseenter', function () { clearInterval(timer); });
+            track.addEventListener('mouseleave',  startLoop);
+
+            var sx = 0;
+            track.addEventListener('touchstart', function (e) {
+              clearInterval(timer);
+              sx = e.touches[0].clientX;
+            }, { passive: true });
+            track.addEventListener('touchend', function (e) {
+              var dx = e.changedTouches[0].clientX - sx;
+              if (dx < -40) goTo(current + 1);
+              else if (dx > 40) goTo(current - 1);
+              startLoop();
+            }, { passive: true });
+
+            dots.forEach(function (d, i) {
+              d.addEventListener('click', function () { goTo(i); });
+            });
+
+            startLoop();
+          })();
+          </script>
+        {%- endif -%}
 
         <div class="section-header justify-self-center text-center">
           <div class="v-stack gap-1">

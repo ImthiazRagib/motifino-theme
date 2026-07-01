@@ -2010,6 +2010,52 @@ model-media model-viewer, model-media .shopify-model-viewer-ui {
   font-weight: 700;
 }
 
+/* ── Bundle Upsell Carousel ──────────────────────── */
+.bb-upsell-carousel {
+  width: 100%;
+  margin-bottom: 4px;
+}
+.bb-upsell-carousel__track-wrap {
+  overflow: hidden;
+  width: 100%;
+}
+.bb-upsell-carousel__track {
+  display: flex;
+  transition: transform .35s cubic-bezier(.25, .46, .45, .94);
+  will-change: transform;
+}
+.bb-upsell-carousel__slide {
+  flex-shrink: 0;
+  width: 100%;
+}
+.bb-upsell-carousel__slide .bb-cart-upsell__card {
+  margin-bottom: 0;
+}
+.bb-upsell-carousel__footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 6px 0 2px;
+}
+.bb-upsell-carousel__dots {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+.bb-upsell-carousel__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #555;
+  cursor: pointer;
+  transition: background .2s, transform .2s;
+}
+.bb-upsell-carousel__dot.is-active {
+  background: linear-gradient(228deg, rgba(191, 149, 63, 1) 14%, rgba(252, 246, 186, 1) 50%, rgba(179, 135, 40, 1) 84.512%);
+  transform: scale(1.35);
+}
+
 /* ── Line item image wrap + X remove button ─────── */
 .bb-line-item-img-wrap {
   position: relative;
