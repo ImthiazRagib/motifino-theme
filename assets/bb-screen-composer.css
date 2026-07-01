@@ -894,7 +894,7 @@
 
   .bb-combo-bar__back,
   .bb-combo-bar__actions .bb-btn-primary {
-    font-size: var(--bb-fs-sm);
+    font-size: var(--bb-fs-md);
   }
 
   .bb-combo-bar__title {
