@@ -596,17 +596,25 @@
     if (!belt.buckle) { state.belts[state.currentBelt - 1].buckle = keys[selIdx]; }
 
     const STEP = 120;   /* px between item centres */
-    const MAX_VIS = 2;     /* items shown each side */
+    const MAX_VIS = 1;     /* items shown each side */
     const N = keys.length;
 
-    /* Infinite layout: use shortest-path wrap for each item's rel position */
-    function applyBuckleLayout(idx) {
+    /* Explicit per-item position — avoids wrapRel reshuffling.
+       Items slide linearly; invisible ones silently teleport to the
+       opposite edge after each transition so the loop feels seamless. */
+    let relPos = keys.map((_, i) => {
+      let r = i - selIdx;
+      if (r > Math.floor(N / 2)) r -= N;
+      if (r < -Math.floor(N / 2)) r += N;
+      return r;
+    });
+
+    function applyBuckleLayout() {
       container.querySelectorAll('.bb-carousel__item').forEach((el, i) => {
-        const rel = wrapRel(i, idx, N);
+        const rel = relPos[i];
         const abs = Math.abs(rel);
-        const sc = 1;
-        const op = abs > MAX_VIS ? 0 : 1;   /* fully opaque when visible */
-        el.style.transform = `translateX(calc(-50% + ${rel * STEP}px)) scale(${sc})`;
+        const op = abs > MAX_VIS ? 0 : 1;
+        el.style.transform = `translateX(calc(-50% + ${rel * STEP}px))`;
         el.style.opacity = String(op);
         el.style.zIndex = String(10 - abs);
         el.style.pointerEvents = abs > MAX_VIS ? 'none' : 'auto';
@@ -614,32 +622,78 @@
       });
     }
 
-    function updateBuckleNavButtons(idx) {
+    function updateBuckleNavButtons() {
       const lbl = document.getElementById('bb-buckle-nav-label');
-      /* Buttons never disabled in infinite mode */
       const prev = document.getElementById('bb-buckle-prev');
       const next = document.getElementById('bb-buckle-next');
       if (prev) prev.disabled = false;
       if (next) next.disabled = false;
-      if (lbl) lbl.textContent = `${idx + 1} / ${N}`;
+      if (lbl) lbl.textContent = `${selIdx + 1} / ${N}`;
     }
 
-    function selectBuckle(newIdx) {
-      selIdx = ((newIdx % N) + N) % N;
+    function navigateBuckle(direction) {
+      const FAR = MAX_VIS + 3; /* off-screen holding slot (in STEP units) */
+      const items = [...container.querySelectorAll('.bb-carousel__item')];
+
+      /* Pre-position: any hidden item that will become the new peek item
+         starts from well outside the screen so it slides in naturally. */
+      relPos.forEach((rel, i) => {
+        const newRel = rel - direction;
+        if (Math.abs(rel) > MAX_VIS && Math.abs(newRel) === MAX_VIS) {
+          const entryRel = newRel > 0 ? FAR : -FAR;
+          items[i].style.transition = 'none';
+          items[i].style.transform = `translateX(calc(-50% + ${entryRel * STEP}px))`;
+          items[i].getBoundingClientRect(); /* flush */
+          items[i].style.transition = '';
+        }
+      });
+
+      selIdx = ((selIdx + direction) % N + N) % N;
+      relPos = relPos.map(r => r - direction);
+      applyBuckleLayout();
+      updateBuckleNavButtons();
       const key = keys[selIdx];
       state.belts[state.currentBelt - 1].buckle = key;
-      applyBuckleLayout(selIdx);
-      updateBuckleNavButtons(selIdx);
       updateBeltPreview();
       const b2 = state.belts[state.currentBelt - 1];
       if (b2.strap) updateModalMedia(b2.strap, key);
-      /* Preload strap-combo photos for this buckle in background */
       preloadComboPhotosForBuckle(key, b2.length);
-      /* Update inline label in section header */
       var nameEl = document.getElementById('bb-buckle-name-inline');
       if (nameEl) nameEl.textContent = BUCKLES[key] ? BUCKLES[key].name : '';
       updateComboBar();
+
+      /* After main transition: wrap items that slid off the far edge.
+         Items becoming visible slide in from off-screen; items staying
+         hidden just reposition silently. */
+      setTimeout(() => {
+        relPos = relPos.map((rel, i) => {
+          if (Math.abs(rel) > MAX_VIS) {
+            const newRel = rel > 0 ? rel - N : rel + N;
+            if (Math.abs(newRel) <= MAX_VIS) {
+              /* Slide in from outside the screen edge */
+              const entryRel = newRel > 0 ? FAR : -FAR;
+              items[i].style.transition = 'none';
+              items[i].style.transform = `translateX(calc(-50% + ${entryRel * STEP}px))`;
+              items[i].style.opacity = '0';
+              items[i].getBoundingClientRect();
+              items[i].style.transition = '';
+              requestAnimationFrame(() => requestAnimationFrame(() => {
+                items[i].style.transform = `translateX(calc(-50% + ${newRel * STEP}px))`;
+                items[i].style.opacity = '1';
+              }));
+            } else {
+              /* Stays hidden — silent reposition */
+              items[i].style.transition = 'none';
+              items[i].style.transform = `translateX(calc(-50% + ${newRel * STEP}px))`;
+              items[i].style.opacity = '0';
+              requestAnimationFrame(() => { items[i].style.transition = ''; });
+            }
+            return newRel;
           }
+          return rel;
+        });
+      }, 350);
+    }
 
     container.innerHTML = keys.map((key) => {
       const b = BUCKLES[key];
@@ -658,8 +712,8 @@
       </div>`;
     }).join('');
 
-    applyBuckleLayout(selIdx);
-    updateBuckleNavButtons(selIdx);
+    applyBuckleLayout();
+    updateBuckleNavButtons();
     /* ── Set initial buckle name in section label ── */
     (function () { var el = document.getElementById('bb-buckle-name-inline'); if (el) el.textContent = BUCKLES[keys[selIdx]] ? BUCKLES[keys[selIdx]].name : ''; })();
 
@@ -668,14 +722,12 @@
     _carouselCtrl.buckle.ctrl = new AbortController();
     const { signal: bSig } = _carouselCtrl.buckle.ctrl;
 
-    /* Prev / Next buttons — always enabled (infinite) */
     const prevBtn = document.getElementById('bb-buckle-prev');
     const nextBtn = document.getElementById('bb-buckle-next');
-    if (prevBtn) prevBtn.addEventListener('click', () => selectBuckle(selIdx - 1), { signal: bSig });
-    if (nextBtn) nextBtn.addEventListener('click', () => selectBuckle(selIdx + 1), { signal: bSig });
+    if (prevBtn) prevBtn.addEventListener('click', () => navigateBuckle(-1), { signal: bSig });
+    if (nextBtn) nextBtn.addEventListener('click', () => navigateBuckle(+1), { signal: bSig });
 
-    /* Touch swipe — ghost-click guard prevents the synthetic 'click' that browsers
-     * fire after touchend from accidentally selecting an adjacent item */
+    /* Touch swipe */
     let _sx = 0, _sy = 0, _sw = false, _buckleJustSwiped = false;
     container.addEventListener('touchstart', e => {
       _sx = e.touches[0].clientX; _sy = e.touches[0].clientY; _sw = false;
@@ -690,17 +742,16 @@
       const dx = e.changedTouches[0].clientX - _sx;
       _buckleJustSwiped = true;
       setTimeout(() => { _buckleJustSwiped = false; }, 400);
-      if (dx < -20) selectBuckle(selIdx + 1);
-      else if (dx > 20) selectBuckle(selIdx - 1);
+      if (dx < -20) navigateBuckle(+1);
+      else if (dx > 20) navigateBuckle(-1);
       _sw = false;
     }, { passive: true, signal: bSig });
 
-    /* Tap a side item to bring it to centre — swipe guard prevents ghost clicks */
+    /* Tap a side item to bring it to centre */
     container.querySelectorAll('.bb-carousel__item').forEach((el, i) => {
       el.addEventListener('click', () => {
         if (_buckleJustSwiped) return;
-        const rel = wrapRel(i, selIdx, N);
-        if (rel !== 0) selectBuckle(selIdx + rel);
+        if (relPos[i] !== 0) navigateBuckle(relPos[i] > 0 ? 1 : -1);
       }, { signal: bSig });
     });
   }
