@@ -100,7 +100,7 @@
           <input type="hidden" name="attributes[products_mobile_grid_mode]" value="">
           <input type="hidden" name="attributes[products_desktop_grid_mode]" value="">
 
-          <div class="v-stack gap-6">
+          <div class="v-stack gap-6" style="gap: 1rem;">
             {%- comment -%}
               ----------------------------------------------------------------------------------------------------------------
               ORDER SUMMARY
@@ -488,6 +488,14 @@
                 <button type="submit" name="checkout" class="bb-checkout-btn">
                   {{ 'cart.general.checkout' | t }}
                 </button>
+
+                {%- if shop.enabled_payment_types.size > 0 -%}
+                  <ul class="payment-methods unstyled-list bb-cart-payment-icons">
+                    {%- for type in shop.enabled_payment_types -%}
+                      <li>{{- type | payment_type_svg_tag -}}</li>
+                    {%- endfor -%}
+                  </ul>
+                {%- endif -%}
               </div>
             </div>
           </div>

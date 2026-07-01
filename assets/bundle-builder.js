@@ -109,11 +109,7 @@
     }
     const ctaLabel = document.querySelector('#bb-composer-cta .bb-composer-cta__label');
     if (ctaLabel) {
-      const isEditingCurrent = state._editMode && state._editMode.isCurrent;
-      const hasNextBelt = !isEditingCurrent && state.currentBelt < state.totalBelts;
-      ctaLabel.textContent = hasNextBelt
-        ? 'Conferma e vai alla ' + (state.currentBelt + 1) + '° Cintura'
-        : 'Aggiungi al carrello';
+      ctaLabel.textContent = 'Aggiungi al carrello';
     }
   }
 
